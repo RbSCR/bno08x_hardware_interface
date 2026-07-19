@@ -1,0 +1,49 @@
+# To use:
+#
+#     pre-commit run -a
+#
+# Or:
+#
+#     pre-commit install  # (runs every time you commit in git)
+#
+# To update this file:
+#
+#     pre-commit autoupdate
+#
+# See https://github.com/pre-commit/pre-commit
+
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+    - id: check-added-large-files
+      args: ['--maxkb=25000']  # Sets the limit to 25,000 KB (16 MB) needed for omniwheel.stl
+    - id: trailing-whitespace
+      exclude_types: [rst, markdown]
+      exclude: ^third_party/
+    - id: end-of-file-fixer
+      exclude: ^third_party/
+    - id: check-yaml
+      args: ["--allow-multiple-documents"]
+    - id: check-xml
+      exclude: ^third_party/
+    - id: mixed-line-ending
+      exclude: ^third_party/
+    - id: check-symlinks
+
+# Cmake hooks
+- repo: local
+  hooks:
+    - id: ament_lint_cmake
+      name: ament_lint_cmake
+      description: Check format of CMakeLists.txt files.
+      entry: ament_lint_cmake
+      language: system
+      files: CMakeLists\.txt$
+
+# Package XML
+- repo: https://github.com/Joschi3/package_xml_validation.git
+  rev: v1.6.0
+  hooks:
+    - id: format-package-xml
+      name: Validate and Format package.xml
