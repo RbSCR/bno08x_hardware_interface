@@ -1,0 +1,29 @@
+# CMake and other build system files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+cmake-build-*/
+Makefile
+
+# VSCode
+.vscode/
+.devcontainer/
+
+# ROS2 - Colcon
+build/
+install/
+log/
+
+# ROS2 - launch/test logs
+*.launch.pyc
+*.test.pyc
+
+# ROS2 - package index
+ament_index/
+
+# Misc
+*.orig
+*.bak
+*~
+*.egg-info/
+*.pyo

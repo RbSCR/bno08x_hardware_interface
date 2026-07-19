@@ -1,0 +1,33 @@
+name: ROS2 Linter
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  MY_PACKAGES: lkwrbot_description lkwrbot_description_visualization lkwrbot_control
+
+jobs:
+  # Note that we pass each job a different name to distinguish each linter job
+  # Note 2: only xmllint, no cpplint
+  #   because there are no c/cpp files (which would result in an error)
+  ament_lint_cpp:
+    name: ament_${{ matrix.linter }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        linter: [xmllint]
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: ros-tooling/setup-ros@0.7.19
+      - uses: ros-tooling/action-ros-lint@0.1.4
+        with:
+          distribution: jazzy
+          linter: ${{ matrix.linter }}
+          package-name: $MY_PACKAGES
