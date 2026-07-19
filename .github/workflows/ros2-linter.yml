@@ -14,15 +14,13 @@ env:
 
 jobs:
   # Note that we pass each job a different name to distinguish each linter job
-  # Note 2: only xmllint, no cpplint
-  #   because there are no c/cpp files (which would result in an error)
-  ament_lint_cpp:
+  ament_lint:
     name: ament_${{ matrix.linter }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        linter: [xmllint]
+        linter: [xmllint, cpplint]
     steps:
       - uses: actions/checkout@v7.0.0
       - uses: ros-tooling/setup-ros@0.7.19
