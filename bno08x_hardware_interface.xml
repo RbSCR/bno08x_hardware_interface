@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<library path="bno08x_hardware_interface">
+  <class
+    name="bno08x_hardware_interface/BNO08XHardwareInterface"
+    type="bno08x_hardware_interface::BNO08XHardwareInterface"
+    base_class_type="hardware_interface::SensorInterface">
+    <description>
+      ros2_control SensorInterface plugin for the CEVA BNO08x IMU's over I2C.
+    </description>
+  </class>
+</library>
