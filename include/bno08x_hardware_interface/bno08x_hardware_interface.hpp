@@ -123,12 +123,11 @@ private:
   std::string sensor_mode_{"NDOF"};  // fusion operation mode   // TODO(rbscr) check remove
 
 
-  // Parameters (from bno8x_ros.hpp & added bn8ros_)
-  // CLEANUP(rbscr) remove 'bn8ros_'  also in .cpp
+  // Parameters  // TODO(rbscr)  merge the 2 'parameter' sections
   std::string frame_id_;                  // TODO(rbscr) check used
-  bool bn8ros_publish_magnetic_field_{true};  // FIXME temporarely set to true, get from param?
+  bool publish_magnetic_field_{true};  // FIXME temporarely set to true, get from param?
   int magnetic_field_rate_;            // TODO(rbscr) used to set report freq. ; check where to set
-  bool bn8ros_publish_imu_{true};      // FIXME temp. set to true, get from param?
+  bool publish_imu_{true};      // FIXME temp. set to true, get from param?
   int imu_rate_;                       // TODO(rbscr) used to set report freq. ; check where to set
 
   bool publish_orientation_;           // TODO(rbscr) check used

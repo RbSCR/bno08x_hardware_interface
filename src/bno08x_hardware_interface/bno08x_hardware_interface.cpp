@@ -464,7 +464,7 @@ void BNO08XHardwareInterface::init_sensor()
     throw std::runtime_error("BNO08x initialization failed");
   }
 
-  if (bn8ros_publish_magnetic_field_)
+  if (publish_magnetic_field_)
   {
     if (!this->bno08x_->enable_report(SH2_MAGNETIC_FIELD_CALIBRATED,
           1000000 / this->magnetic_field_rate_))
@@ -473,7 +473,7 @@ void BNO08XHardwareInterface::init_sensor()
     }
   }
 
-  if (bn8ros_publish_imu_)
+  if (publish_imu_)
   {
     if (!this->bno08x_->enable_report(SH2_ROTATION_VECTOR, 1000000 / this->imu_rate_))
     {  // Hz to us
@@ -488,7 +488,7 @@ void BNO08XHardwareInterface::init_sensor()
       RCLCPP_ERROR(logger_, "Failed to enable gyroscope sensor");
     }
   }
-  if (!(bn8ros_publish_imu_ || bn8ros_publish_magnetic_field_))
+  if (!(publish_imu_ || publish_magnetic_field_))
   {
     RCLCPP_ERROR(logger_, "No sensor reports enabled! Exiting...");
     throw std::runtime_error("No sensor reports enabled");
