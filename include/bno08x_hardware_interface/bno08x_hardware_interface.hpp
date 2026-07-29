@@ -79,11 +79,6 @@ public:
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
-  // CLEANUP(rbscr) load_calib not needed
-  // Load calibration offsets from calib_file_ and write them to the sensor
-  // (must be called while the sensor is in CONFIG mode).
-  // Returns true if the file was found and applied, false if absent or on error.
- // | bool load_calib_offsets();
 
   // Initialize communication with the sensor.
   // Currently only I2C is implemented; possible extensions are SPI and UART.
@@ -125,7 +120,6 @@ private:
   std::string axis_remap_{"P1"};  // TODO(rbscr) [copy bn055] bn08x uses different remap-names
                                        // TODO(rbscr) check if remap possible on bno08x-driver
   bool        enable_mock_{false};
-  std::string calib_file_{};  // empty = no file, do not attempt to load
   std::string sensor_mode_{"NDOF"};  // fusion operation mode   // TODO(rbscr) check remove
 
 

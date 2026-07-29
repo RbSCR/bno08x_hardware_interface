@@ -39,62 +39,8 @@
 namespace
 {
 
-// CLEANUP(rbscr) check parse calib yaml removed
-// |bool parse_calib_yaml(
-// |  const std::string & path,
-// |  bno055_accel_offset_t & ao,
-// |  bno055_gyro_offset_t & go,
-// |  bno055_mag_offset_t & mo)
-// |{
-// |  std::ifstream f(path);
-// |  if (!f) {return false;}
-// |
-// |  std::unordered_map<std::string, int16_t> vals;
-// |  std::string line;
-// |  while (std::getline(f, line)) {
-// |    if (line.empty() || line[0] == '#') {continue;}
-// |    const auto colon = line.find(':');
-// |    if (colon == std::string::npos) {continue;}
-// |    std::string key = line.substr(0, colon);
-// |    const auto key_end = key.find_last_not_of(" \t\r");
-// |    key = (key_end == std::string::npos) ? "" : key.substr(0, key_end + 1);
-// |    try {
-// |      vals[key] = static_cast<int16_t>(std::stoi(line.substr(colon + 1)));
-// |    } catch (const std::exception & e) {
-// |      RCLCPP_WARN(
-// |        rclcpp::get_logger("bno055_calib"),
-// |        "Ignoring malformed calibration value for '%s': %s", key.c_str(), e.what());
-// |      continue;
-// |    }
-// |  }
-// |
-// |  auto get = [&](const std::string & k) -> int16_t {
-// |      const auto it = vals.find(k);
-// |      return (it != vals.end()) ? it->second : int16_t(0);
-// |    };
-// |
-// |  ao = bno055_accel_offset_t{};
-// |  ao.x = get("accel_offset_x");
-// |  ao.y = get("accel_offset_y");
-// |  ao.z = get("accel_offset_z");
-// |  ao.r = get("accel_radius");
-// |
-// |  go = bno055_gyro_offset_t{};
-// |  go.x = get("gyro_offset_x");
-// |  go.y = get("gyro_offset_y");
-// |  go.z = get("gyro_offset_z");
-// |
-// |  mo = bno055_mag_offset_t{};
-// |  mo.x = get("mag_offset_x");
-// |  mo.y = get("mag_offset_y");
-// |  mo.z = get("mag_offset_z");
-// |  return true;  mo.r = get("mag_radius");
-
-// |  return true;
-// |}
-
 // Quaternion raw -> unit: divide by 2^14 (Bosch datasheet §3.6.5.5)
-constexpr double QUATERNION_SCALE = 1.0 / 16384.0;
+constexpr double QUATERNION_SCALE = 1.0 / 16384.0;   // TODO(rbscr) check needed
 
 // FIXME(rbscr) BNO08X has a different axis remap
 // Axis remap lookup: P0-P7 -> { AXIS_MAP_CONFIG byte, AXIS_MAP_SIGN byte }
@@ -210,13 +156,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
   // enable_mock_mode (default: false)
   enable_mock_ = parse_bool_param("enable_mock_mode", false);
 
-  // TODO(rbscr)  remove calib_file ; .cpp .hhp launch  ???
-  // calib_file (default: empty — no file, rely on in-sensor calibration)
-  if (const auto it = info_.hardware_parameters.find("calib_file");
-    it != info_.hardware_parameters.end())
-  {
-    calib_file_ = it->second;
-  }
 
   // TODO(rbscr)  check sensormode of BNO08X
   // sensor_mode (default: "NDOF")
@@ -257,10 +196,9 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   RCLCPP_INFO(
     logger_,
-    "Initialized: i2c_bus=%d i2c_addr=0x%02X axis_remap=%s sensor_mode=%s mock=%s calib_file=%s",
+    "Initialized: i2c_bus=%d i2c_addr=0x%02X axis_remap=%s sensor_mode=%s mock=%s",
     i2c_bus_, i2c_addr_, axis_remap_.c_str(), sensor_mode_.c_str(),
-    enable_mock_ ? "true" : "false",
-    calib_file_.empty() ? "(none)" : calib_file_.c_str());
+    enable_mock_ ? "true" : "false");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -360,20 +298,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   // |   return hardware_interface::CallbackReturn::ERROR;
   // | }
 
-  // CLEANUP(rbscr) load_calib_offsets
-  // | // Apply saved calibration offsets if a file was provided.
-  // | // Offsets must be written in CONFIG mode, before switching to the configured fusion mode.
-  // | if (!calib_file_.empty()) {
-  // |   if (load_calib_offsets()) {
-  // |     RCLCPP_INFO(logger_, "Calibration offsets loaded from %s", calib_file_.c_str());
-  // |   } else {
-  // |     RCLCPP_WARN(
-  // |       logger_,
-  // |       "Calibration file '%s' not found or unreadable — starting uncalibrated.",
-  // |       calib_file_.c_str());
-  // |   }
-  // | }
-
   // FIXME(rbscr) Use axis remap in init_sensor ? compare bno055 (see below)
   // | // Axis remap: write { AXIS_MAP_CONFIG, AXIS_MAP_SIGN } directly via the
   // | // wired bus_write callback (same values as flynneva/bno055 P-code table)
@@ -405,33 +329,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   RCLCPP_INFO(logger_, "BNO08X initialized and configured");
   return hardware_interface::CallbackReturn::SUCCESS;
 }
-
-// CLEANUP(rbscr) load_calib_offsets
-// ── load_calib_offsets: read YAML file and write offsets to sensor ───────────
-// Called in on_configure while the sensor is still in CONFIG mode.
-
-// |bool BNO08XHardwareInterface::load_calib_offsets()
-// |{
-// |  bno055_accel_offset_t ao{};
-// |  bno055_gyro_offset_t go{};
-// |  bno055_mag_offset_t mo{};
-// |
-// |  if (!parse_calib_yaml(calib_file_, ao, go, mo)) {return false;}
-// |
-// |  bool ok =
-// |    (bno055_write_accel_offset(&ao) == BNO055_SUCCESS) &&
-// |    (bno055_write_gyro_offset(&go)  == BNO055_SUCCESS) &&
-// |    (bno055_write_mag_offset(&mo)   == BNO055_SUCCESS);
-// |
-// |  if (ok) {
-// |    RCLCPP_INFO(logger_, "  Accel offsets: x=%d y=%d z=%d  radius=%d", ao.x, ao.y, ao.z, ao.r);
-// |    RCLCPP_INFO(logger_, "  Gyro offsets:  x=%d y=%d z=%d", go.x, go.y, go.z);
-// |    RCLCPP_INFO(logger_, "  Mag offsets:   x=%d y=%d z=%d  radius=%d", mo.x, mo.y, mo.z, mo.r);
-// |  } else {
-// |    RCLCPP_ERROR(logger_, "Failed to write calibration offsets to sensor");
-// |  }
-// |  return ok;
-// |}
 
 
 // ── on_activate / on_deactivate ─────────────────────────────────

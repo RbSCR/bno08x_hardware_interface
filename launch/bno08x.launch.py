@@ -60,14 +60,6 @@ def generate_launch_description():
             )
         ),
         DeclareLaunchArgument(
-            'calib_file',
-            default_value='',
-            description=(
-                'Absolute path to calibration YAML file (see config/bno08x_calib.yaml). '
-                'Empty = start uncalibrated and rely on in-sensor auto-calibration.'
-            )
-        ),
-        DeclareLaunchArgument(
             'publish_tf',
             default_value='true',
             description=(
@@ -89,7 +81,6 @@ def generate_launch_description():
     axis_remap = LaunchConfiguration('axis_remap')
     enable_mock = LaunchConfiguration('enable_mock_mode')
     sensor_mode = LaunchConfiguration('sensor_mode')
-    calib_file = LaunchConfiguration('calib_file')
     publish_tf = LaunchConfiguration('publish_tf')
     publish_diagnostics = LaunchConfiguration('publish_diagnostics')
 
@@ -111,8 +102,6 @@ def generate_launch_description():
             'enable_mock_mode:=', enable_mock,
             ' ',
             'sensor_mode:=', sensor_mode,
-            ' ',
-            'calib_file:=', calib_file,
         ]
     )
     robot_description = {
