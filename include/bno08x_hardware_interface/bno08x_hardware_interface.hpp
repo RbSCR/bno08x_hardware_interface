@@ -113,7 +113,7 @@ private:
 
   // Parameters
   bool        enable_i2c_{true};
-  int         i2c_bus_{1};
+  std::string i2c_device_;
   uint8_t     i2c_addr_{0x4A};  // Default 0x4A, alternative 0x4B  Par 1.2.2.1 Datasheet BNO08X
   bool        enable_spi_{false};
   bool        enable_uart_{false};
@@ -126,9 +126,9 @@ private:
   // Parameters  // TODO(rbscr)  merge the 2 'parameter' sections
   std::string frame_id_;                  // TODO(rbscr) check used
   bool publish_magnetic_field_{true};  // FIXME temporarely set to true, get from param?
-  int magnetic_field_rate_;            // TODO(rbscr) used to set report freq. ; check where to set
+  int magnetic_field_rate_;            // TODO(rbscr) used to set report freq. ; check where to set ; bno08x_driver-ros uses parameter
   bool publish_imu_{true};      // FIXME temp. set to true, get from param?
-  int imu_rate_;                       // TODO(rbscr) used to set report freq. ; check where to set
+  int imu_rate_;                       // TODO(rbscr) used to set report freq. ; check where to set ; bno08x_driver-ros uses parameter
 
   bool publish_orientation_;           // TODO(rbscr) check used
   bool publish_acceleration_;          // TODO(rbscr) check used

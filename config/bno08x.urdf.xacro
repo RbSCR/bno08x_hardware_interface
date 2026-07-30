@@ -5,7 +5,7 @@
 
   <!-- Arguments -->
   <xacro:arg name="enable_i2c_comm"  default="true"/>  <!-- I2C communication -->
-  <xacro:arg name="i2c_bus"          default="1"/>
+  <xacro:arg name="i2c_device"       default="/dev/i2c-bno08x"/>
   <xacro:arg name="i2c_addr"         default="4A"/>    <!-- hex, no 0x prefix: 4A = 0x4A -->
   <xacro:arg name="enable_spi_comm"  default="false"/> <!-- placeholder, spi not implemented-->
   <xacro:arg name="enable_uart_comm" default="false"/> <!-- placeholder, uart not implemented -->
@@ -41,8 +41,8 @@
 
       <!-- I2C Parameters -->
       <param name="enable_i2c_comm">$(arg enable_i2c_comm)</param>
-      <param name="i2c_bus">$(arg i2c_bus)</param>       <!-- I2C bus number (default: 1 → /dev/i2c-1) -->
-      <param name="i2c_addr">$(arg i2c_addr)</param>     <!-- I2C address in hex, no 0x prefix (default: 28 = 0x28) -->
+      <param name="i2c_device">$(arg i2c_device)</param>  <!-- I2C device name (default: /dev/i2c-bno08x) -->
+      <param name="i2c_addr">$(arg i2c_addr)</param>      <!-- I2C address in hex, no 0x prefix (default: 28 = 0x28) -->
 
       <!-- SPI and UART placeholder parameters -->
       <param name="enable_spi_comm">$(arg enable_spi_comm)</param>

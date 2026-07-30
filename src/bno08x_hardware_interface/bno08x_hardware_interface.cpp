@@ -89,22 +89,15 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   RCLCPP_INFO(logger_, "Initializing BNO08X hardware interface: %s", info_.name.c_str());
 
-  // TODO(rbscr)  check implemenation onInit [copied from bno055]
-
 
   // I2C enable
   enable_i2c_ = parse_bool_param("enable_i2c_comm", true);
 
-  // i2c_bus (default: 1)
-  if (const auto it = info_.hardware_parameters.find("i2c_bus");
+  // i2c_device
+  if (const auto it = info_.hardware_parameters.find("i2c_device");
     it != info_.hardware_parameters.end())
   {
-    try {
-      i2c_bus_ = std::stoi(it->second);
-    } catch (const std::exception & e) {
-      RCLCPP_ERROR(logger_, "Invalid i2c_bus: %s", e.what());
-      return hardware_interface::CallbackReturn::ERROR;
-    }
+    i2c_device_ = it->second;
   }
 
   // i2c_addr (default: 0x4A   alternative: 0x4B)
@@ -196,8 +189,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   RCLCPP_INFO(
     logger_,
-    "Initialized: i2c_bus=%d i2c_addr=0x%02X axis_remap=%s sensor_mode=%s mock=%s",
-    i2c_bus_, i2c_addr_, axis_remap_.c_str(), sensor_mode_.c_str(),
+    "Initialized: i2c_device=%s i2c_addr=0x%02X axis_remap=%s sensor_mode=%s mock=%s",
+    i2c_device_, i2c_addr_, axis_remap_.c_str(), sensor_mode_.c_str(),
     enable_mock_ ? "true" : "false");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -228,7 +221,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   }
 
   // Open communication (I2C bus)
-  std::string device = "/dev/i2c-" + std::to_string(i2c_bus_);
+  std::string device = i2c_device_;  // CLEANUP "/dev/i2c-" + std::to_string(i2c_ bus_);
   try {
     init_communication();
   } catch (const std::exception& e) {
@@ -250,8 +243,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   }
 
   // | // Wire Bosch driver callbacks
-  // | sensor_.bus_read  = BNO055_I2C_bus_read;
-  // | sensor_.bus_write = BNO055_I2C_bus_write;
+  // | sensor_.bus_read  = BNO055_I2C_ bus_read;
+  // | sensor_.bus_write = BNO055_I2C_ bus_write;
   // | sensor_.delay_msec = BNO055_delay_msek;
   // | sensor_.dev_addr  = static_cast<u8>(i2c_addr_);
 
@@ -385,7 +378,7 @@ void BNO08XHardwareInterface::init_communication()
   // | this->get_parameter("spi.enabled", spi_enabled);
 
   if (enable_i2c_) {
-    std::string device = "/dev/i2c-" + std::to_string(i2c_bus_);
+    std::string device = i2c_device_;  // TODO CLEANUP "/dev/i2c-" + std::to_string(i2c_ bus_);
     // | std::string address;
     // | this->get_parameter("i2c.bus", device);
     // | this->get_parameter("i2c.address", address);
