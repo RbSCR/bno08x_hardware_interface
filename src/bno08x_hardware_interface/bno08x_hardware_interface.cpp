@@ -190,7 +190,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
   RCLCPP_INFO(
     logger_,
     "Initialized: i2c_device=%s i2c_addr=0x%02X axis_remap=%s sensor_mode=%s mock=%s",
-    i2c_device_, i2c_addr_, axis_remap_.c_str(), sensor_mode_.c_str(),
+    i2c_device_.c_str(), i2c_addr_, axis_remap_.c_str(), sensor_mode_.c_str(),
     enable_mock_ ? "true" : "false");
 
   return hardware_interface::CallbackReturn::SUCCESS;
