@@ -38,6 +38,11 @@ target_compile_features(sh2_library PUBLIC c_std_99)
 
 set_target_properties(sh2_library PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+# copied from bno08x_driver
+target_compile_options(sh2_library
+  PUBLIC -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable
+)
+
 # ── BNO08x driver (kindof external submodule) ────────────────────
 set(BNO08X_DRIVER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/bno08x_driver)
 
@@ -52,6 +57,11 @@ target_include_directories(bno08x_driver PUBLIC
 )
 
 set_target_properties(bno08x_driver PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+# copied from bno08x_driver
+target_compile_options(bno08x_driver
+  PUBLIC -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable
+)
 
 target_link_libraries(bno08x_driver
   sh2_library

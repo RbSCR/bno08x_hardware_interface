@@ -1013,7 +1013,8 @@ const sh2_Op_t getFrsOp = {
 // ------------------------------------------------------------------------
 // Support for sh2_getMetadata
 
-const static struct {
+// RbSCR (2026): replaced 'const static ...' with ' static const ...' to comply with new standard
+static const struct {
     sh2_SensorId_t sensorId;
     uint16_t recordId;
 } sensorToRecordMap[] = {

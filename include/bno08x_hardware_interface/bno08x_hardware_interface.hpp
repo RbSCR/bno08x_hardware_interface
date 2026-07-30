@@ -79,7 +79,6 @@ public:
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
-
   // Initialize communication with the sensor.
   // Currently only I2C is implemented; possible extensions are SPI and UART.
   // Called by on_configure()
@@ -126,9 +125,9 @@ private:
   // Parameters  // TODO(rbscr)  merge the 2 'parameter' sections
   std::string frame_id_;                  // TODO(rbscr) check used
   bool publish_magnetic_field_{true};  // FIXME temporarely set to true, get from param?
-  int magnetic_field_rate_;            // TODO(rbscr) used to set report freq. ; check where to set ; bno08x_driver-ros uses parameter
+  int magnetic_field_rate_;  // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses param
   bool publish_imu_{true};      // FIXME temp. set to true, get from param?
-  int imu_rate_;                       // TODO(rbscr) used to set report freq. ; check where to set ; bno08x_driver-ros uses parameter
+  int imu_rate_;      // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses parameter
 
   bool publish_orientation_;           // TODO(rbscr) check used
   bool publish_acceleration_;          // TODO(rbscr) check used

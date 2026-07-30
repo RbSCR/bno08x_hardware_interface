@@ -33,14 +33,8 @@
 #include "pluginlib/class_list_macros.hpp"
 
 
-// TODO(rbscr) temp. file bno055_i2c.h ; check which struct needed to be 'translated'
-// |#include "bno055_i2c.h"
-
 namespace
 {
-
-// Quaternion raw -> unit: divide by 2^14 (Bosch datasheet §3.6.5.5)
-constexpr double QUATERNION_SCALE = 1.0 / 16384.0;   // TODO(rbscr) check needed
 
 // FIXME(rbscr) BNO08X has a different axis remap
 // Axis remap lookup: P0-P7 -> { AXIS_MAP_CONFIG byte, AXIS_MAP_SIGN byte }
@@ -158,14 +152,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     sensor_mode_ = it->second;
   }
 
-  // CLEANUP(rbscr) OperationMode
-  // |if (kOperationMode.find(sensor_mode_) == kOperationMode.end()) {
-  // |  RCLCPP_ERROR(
-  // |    logger_, "Invalid sensor_mode '%s'. Must be one of: NDOF, NDOF_FMC_OFF, IMUPLUS.",
-  // |    sensor_mode_.c_str());
-  // |  return hardware_interface::CallbackReturn::ERROR;
-  // |}
-
   if (info_.sensors.size() != 1) {
     RCLCPP_ERROR(logger_, "Expected exactly 1 <sensor> element, got %zu", info_.sensors.size());
     return hardware_interface::CallbackReturn::ERROR;
@@ -206,7 +192,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   RCLCPP_INFO(logger_, "Configuring BNO08X...");
-  consecutive_read_errors_ = 0;   //  TODO(rbscr) check relaly needed for bno08x
+  consecutive_read_errors_ = 0;   // TODO(rbscr) check relaly needed for bno08x
 
   if (enable_mock_) {
     RCLCPP_INFO(logger_, "Mock mode enabled - skipping communication initialization");
@@ -221,7 +207,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   }
 
   // Open communication (I2C bus)
-  std::string device = i2c_device_;  // CLEANUP "/dev/i2c-" + std::to_string(i2c_ bus_);
   try {
     init_communication();
   } catch (const std::exception& e) {
@@ -372,21 +357,16 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_error(
 // FIXME  copied (and adapted) from void BNO08xROS::init_comms()
 void BNO08XHardwareInterface::init_communication()
 {
-  // | bool i2c_enabled, uart_enabled, spi_enabled;
-  // | this->get_parameter("i2c.enabled", i2c_enabled);
-  // | this->get_parameter("uart.enabled", uart_enabled);
-  // | this->get_parameter("spi.enabled", spi_enabled);
-
   if (enable_i2c_) {
-    std::string device = i2c_device_;  // TODO CLEANUP "/dev/i2c-" + std::to_string(i2c_ bus_);
+    std::string device = i2c_device_;
     // | std::string address;
     // | this->get_parameter("i2c.bus", device);
     // | this->get_parameter("i2c.address", address);
     RCLCPP_INFO(logger_, "Communication Interface: I2C");
     try
     {
-      // | comm_interface_ = new I2CInterface(device, std::stoi(address, nullptr, 16));
-      // TODO check 3e param
+      // TODO(rbscr) hier geen std::stoi(address, nullptr, 16) zoals in bno08x_ros.cpp
+      // bij ophalen parameter al met std::stoul( .. , nullptr, 16) omgezet/gecontroleerd
       comm_interface_ = new I2CInterface(device, i2c_addr_);
     }
     catch (const std::exception& e)
@@ -431,8 +411,7 @@ void BNO08XHardwareInterface::init_communication()
 }
 
 
-// FIXME  copied (and adapted) from void BNO08xROS::init_sensor()
-// TODO(rbscr) update/fix init_sensor()
+// TODO(rbscr) update init_sensor() ; other reports ?
 /**
  * @brief Initialize the sensor
  *
