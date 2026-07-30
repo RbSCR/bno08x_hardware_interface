@@ -15,7 +15,7 @@ Example usage:
     ros2 launch bno08x_hardware_interface bno08x.launch.py publish_tf:=false
     ros2 launch bno08x_hardware_interface bno08x.launch.py publish_diagnostics:=false
 """
-# TODO(rbscr) add enable i2c
+# TODO(rbscr) example usage bijwerken
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -29,6 +29,11 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     # Declare arguments
     declared_arguments = [
+        DeclareLaunchArgument(
+            'enable_i2c_comm',
+            default_value='false',
+            description='Use I2C communication I2C'
+        ),
         DeclareLaunchArgument(
             'i2c_device',
             default_value='/dev/i2c-bno08x',
@@ -75,6 +80,7 @@ def generate_launch_description():
         ),
     ]
 
+    enable_i2c_comm = LaunchConfiguration('enable_i2c_comm')
     i2c_device = LaunchConfiguration('i2c_device')
     i2c_addr = LaunchConfiguration('i2c_addr')
     axis_remap = LaunchConfiguration('axis_remap')
@@ -91,6 +97,8 @@ def generate_launch_description():
             PathJoinSubstitution(
                 [FindPackageShare('bno08x_hardware_interface'), 'config', 'bno08x.urdf.xacro']
             ),
+            ' ',
+            'enable_i2c_comm:=', enable_i2c_comm,
             ' ',
             'i2c_device:=', i2c_device,
             ' ',
@@ -115,6 +123,7 @@ def generate_launch_description():
         parameters=[robot_description],
     )
 
+    # TODO(rbscr) check imu_broadcaster.yaml nodig?
     # Controller configuration
     controller_config = PathJoinSubstitution(
         [FindPackageShare('bno08x_hardware_interface'), 'config', 'imu_broadcaster.yaml']
@@ -145,6 +154,7 @@ def generate_launch_description():
         condition=IfCondition(publish_tf),
     )
 
+    # TODO(rbscr) diagnostics_node nog maken (of in hardware_interface opnemen)
     # Optional: publish sensor health and calibration status to /diagnostics at 1 Hz.
     # Compatible with rqt_robot_monitor and diagnostic_aggregator.
     bno08x_diagnostics_node = Node(
@@ -153,6 +163,7 @@ def generate_launch_description():
         name='bno8x_diagnostics',
         output='screen',
         parameters=[{
+            'enable_i2c_comm': ParameterValue(enable_i2c_comm, value_type=str),
             'i2c_device':  i2c_device,
             'i2c_addr':    ParameterValue(i2c_addr, value_type=str),
             'sensor_mode': sensor_mode,
