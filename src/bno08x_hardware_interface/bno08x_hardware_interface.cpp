@@ -183,16 +183,13 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 }
 
 
-
 // ── on_configure: open I2C, init & configure BNO08X ──────────────
-
-// TODO(rbscr) check lifecycle method on_configure
 
 hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   RCLCPP_INFO(logger_, "Configuring BNO08X...");
-  consecutive_read_errors_ = 0;   // TODO(rbscr) check relaly needed for bno08x
+  consecutive_read_errors_ = 0;   // TODO(rbscr) check needed for bno08x
 
   if (enable_mock_) {
     RCLCPP_INFO(logger_, "Mock mode enabled - skipping communication initialization");
@@ -227,11 +224,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  // | // Wire Bosch driver callbacks
-  // | sensor_.bus_read  = BNO055_I2C_ bus_read;
-  // | sensor_.bus_write = BNO055_I2C_ bus_write;
-  // | sensor_.delay_msec = BNO055_delay_msek;
-  // | sensor_.dev_addr  = static_cast<u8>(i2c_addr_);
 
   // | // Initialize the Bosch driver (reads chip ID, populates rev info)
   // | s32 comres = bno055_init(&sensor_);
@@ -354,7 +346,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_error(
 
 // Initialize communications
 
-// FIXME  copied (and adapted) from void BNO08xROS::init_comms()
 void BNO08XHardwareInterface::init_communication()
 {
   if (enable_i2c_) {
@@ -365,7 +356,7 @@ void BNO08XHardwareInterface::init_communication()
     RCLCPP_INFO(logger_, "Communication Interface: I2C");
     try
     {
-      // TODO(rbscr) hier geen std::stoi(address, nullptr, 16) zoals in bno08x_ros.cpp
+      // Note: hier geen std::stoi(address, nullptr, 16) zoals in bno08x_ros.cpp
       // bij ophalen parameter al met std::stoul( .. , nullptr, 16) omgezet/gecontroleerd
       comm_interface_ = new I2CInterface(device, i2c_addr_);
     }
@@ -411,7 +402,7 @@ void BNO08XHardwareInterface::init_communication()
 }
 
 
-// TODO(rbscr) update init_sensor() ; other reports ?
+// TODO(rbscr) init_sensor() : other reports ?
 /**
  * @brief Initialize the sensor
  *
@@ -484,73 +475,29 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
   switch (sensor_value->sensorId)
   {
     case SH2_MAGNETIC_FIELD_CALIBRATED:
-      // FIXME(rbscr) hardware interface does not publish messages
-      // instead it transfers the values to allow ROS2 Control to publish
       hw_magnetic_field_x_ = sensor_value->un.magneticField.x;
       hw_magnetic_field_y_ = sensor_value->un.magneticField.y;
       hw_magnetic_field_z_ = sensor_value->un.magneticField.z;
-
-      // | this->mag_msg_.magnetic_field.x = sensor_value->un.magneticField.x;
-      // | this->mag_msg_.magnetic_field.y = sensor_value->un.magneticField.y;
-      // | this->mag_msg_.magnetic_field.z = sensor_value->un.magneticField.z;
-      // | this->mag_msg_.header.frame_id = this->frame_id_;
-      // | this->mag_msg_.header.stamp = this->get_clock()->now();
-      // | // IMU will still return infrequent magnetic field reports even if the report
-      // | // was not enabled, so check it was enabled before publishing.
-      // | if (publish_magnetic_field_) {
-      // |   this->mag_publisher_->publish(this->mag_msg_);
-      // | }
       break;
     case SH2_ROTATION_VECTOR:
-      // FIXME(rbscr) hadware interface does not publish messages (see above)
       hw_orientation_x_ = sensor_value->un.rotationVector.i;
       hw_orientation_y_ = sensor_value->un.rotationVector.j;
       hw_orientation_z_ = sensor_value->un.rotationVector.k;
       hw_orientation_w_ = sensor_value->un.rotationVector.real;
-
-      // | this->imu_msg_.orientation.x = sensor_value->un.rotationVector.i;
-      // | this->imu_msg_.orientation.y = sensor_value->un.rotationVector.j;
-      // | this->imu_msg_.orientation.z = sensor_value->un.rotationVector.k;
-      // | this->imu_msg_.orientation.w = sensor_value->un.rotationVector.real;
-      // | imu_received_flag_ |= ROTATION_VECTOR_RECEIVED;
       break;
     case SH2_ACCELEROMETER:
-      // FIXME(rbscr) hardware interface does not publish messages (see above)
       hw_linear_acceleration_x_ = sensor_value->un.accelerometer.x;
       hw_linear_acceleration_y_ = sensor_value->un.accelerometer.y;
       hw_linear_acceleration_z_ = sensor_value->un.accelerometer.z;
-
-      // | this->imu_msg_.linear_acceleration.x = sensor_value->un.accelerometer.x;
-      // | this->imu_msg_.linear_acceleration.y = sensor_value->un.accelerometer.y;
-      // | this->imu_msg_.linear_acceleration.z = sensor_value->un.accelerometer.z;
-      // | imu_received_flag_ |= ACCELEROMETER_RECEIVED;
       break;
     case SH2_GYROSCOPE_CALIBRATED:
-      // FIXME(rbscr) hardware interface does not publish messages (see above)
       hw_angular_velocity_x_ = sensor_value->un.gyroscope.x;
       hw_angular_velocity_y_ = sensor_value->un.gyroscope.y;
       hw_angular_velocity_z_ = sensor_value->un.gyroscope.z;
-
-      // | this->imu_msg_.angular_velocity.x = sensor_value->un.gyroscope.x;
-      // | this->imu_msg_.angular_velocity.y = sensor_value->un.gyroscope.y;
-      // | this->imu_msg_.angular_velocity.z = sensor_value->un.gyroscope.z;
-      // | imu_received_flag_ |= GYROSCOPE_RECEIVED;
       break;
     default:
       break;
   }
-
-  // TODO(rbscr) check how bn055_hardware_interface iniates the transfer
-
-  // FIXME(rbscr) hardware interface does not publish messages (see above)
-  // | if (imu_received_flag_ == (ROTATION_VECTOR_RECEIVED | ACCELEROMETER_RECEIVED
-  // |                            | GYROSCOPE_RECEIVED))
-  // | {
-  // |   this->imu_msg_.header.frame_id = this->frame_id_;
-  // |   this->imu_msg_.header.stamp = this->get_clock()->now();
-  // |   this->imu_publisher_->publish(this->imu_msg_);
-  // |   imu_received_flag_ = 0;
-  // | }
 }
 
 /**
@@ -572,9 +519,10 @@ void BNO08XHardwareInterface::poll_timer_callback()
 void BNO08XHardwareInterface::close_hardware()
 {
   if (!enable_mock_) {
-// |    bno055_set_power_mode(BNO055_POWER_MODE_SUSPEND);
-// TODO(rbscr) close communication
-// |    bno055_i2c_close();
+    // TODO(rbscr) suspend sensor / close communication
+    // | uit bno055_hardware_interface:
+    // |    bno055_set_power_mode(BNO055_POWER_MODE_SUSPEND);
+    // |    bno055_i2c_close();
     RCLCPP_INFO(logger_, "BNO08X suspended and I2C closed");
   }
   hw_orientation_x_ = 0.0;
