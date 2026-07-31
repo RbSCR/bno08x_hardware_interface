@@ -67,7 +67,7 @@ public:
   // The base-class default returns ERROR → FINALIZED, bypassing on_cleanup and leaking
   // the I2C fd. Override to close hardware and return SUCCESS → UNCONFIGURED so the
   // controller manager can attempt reconfiguration without a process restart.
-  // TODO(rbscr) check implementation in bn055 hardware interface
+  // TODO(rbscr) check implementation in bn055 hardware interface ; check comment
   hardware_interface::CallbackReturn on_error(
     const rclcpp_lifecycle::State & previous_state) override;
 
