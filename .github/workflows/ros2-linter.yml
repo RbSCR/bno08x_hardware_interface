@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  MY_PACKAGES: lkwrbot_description lkwrbot_description_visualization lkwrbot_control
+  MY_PACKAGES: bno08x_hardware_interface
 
 jobs:
   # Note that we pass each job a different name to distinguish each linter job
