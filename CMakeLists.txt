@@ -99,13 +99,15 @@ install(FILES bno08x_hardware_interface.xml
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
+  # Linters to be used in the 'auto-linting' are mentioned in package.xml
+
+  # Linting disabled for 'external' files
+  list(APPEND AMENT_LINT_AUTO_FILE_EXCLUDE
+    "include/sh2/*"
+    "include/bno08x_driver/*"
+    "src/bno08x_driver/*"
+  )
+
   ament_lint_auto_find_test_dependencies()
 endif()
 
