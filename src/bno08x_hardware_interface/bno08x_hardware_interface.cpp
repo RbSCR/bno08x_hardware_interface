@@ -224,49 +224,10 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-
-  // | // Initialize the Bosch driver (reads chip ID, populates rev info)
-  // | s32 comres = bno055_init(&sensor_);
-  // | if (comres != BNO055_SUCCESS) {
-  // | RCLCPP_ERROR(logger_,"bno055_init() failed (err=%d). Check wiring and I2C address.", comres);
-  // |   bno055_i2c_close();
-  // |   return hardware_interface::CallbackReturn::ERROR;
-  // | }
-
-  // TODO(rbscr) add chip/sensor info to init_sensor. compare bno0555 (see below)
+  // TODO(rbscr) add chip/sensor info to init_sensor. compare bno0555
   // | RCLCPP_INFO(
   // |   logger_, "BNO08X detected: chip_id=0x%02X sw_rev=0x%04X",
   // |   sensor_.chip_id, sensor_.sw_rev_id);
-
-  // TODO(rbscr) check config init_sensor. compare bno0555 (see below)
-  // | // Switch to CONFIG mode to apply settings
-  // | comres = bno055_set_operation_mode(BNO055_OPERATION_MODE_CONFIG);
-  // | if (comres != BNO055_SUCCESS) {
-  // |   RCLCPP_WARN(logger_, "Failed to set CONFIG mode (err=%d)", comres);
-  // | }
-  // | rclcpp::sleep_for(std::chrono::milliseconds(25));  // datasheet: >=19 ms
-
-  // | // Normal power mode
-  // | comres = bno055_set_power_mode(BNO055_POWER_MODE_NORMAL);
-  // | if (comres != BNO055_SUCCESS) {
-  // |   RCLCPP_WARN(logger_, "Failed to set NORMAL power mode (err=%d)", comres);
-  // | }
-
-  // | // Gyro unit: radians per second
-  // | comres = bno055_set_gyro_unit(BNO055_GYRO_UNIT_RPS);
-  // | if (comres != BNO055_SUCCESS) {
-  // |   RCLCPP_ERROR(logger_, "Failed to set gyro unit to rps (err=%d)", comres);
-  // |   bno055_i2c_close();
-  // |   return hardware_interface::CallbackReturn::ERROR;
-  // | }
-
-  // | // Accel unit: m/s^2
-  // | comres = bno055_set_accel_unit(BNO055_ACCEL_UNIT_MSQ);
-  // | if (comres != BNO055_SUCCESS) {
-  // |   RCLCPP_ERROR(logger_, "Failed to set accel unit to m/s^2 (err=%d)", comres);
-  // |   bno055_i2c_close();
-  // |   return hardware_interface::CallbackReturn::ERROR;
-  // | }
 
   // FIXME(rbscr) Use axis remap in init_sensor ? compare bno055 (see below)
   // | // Axis remap: write { AXIS_MAP_CONFIG, AXIS_MAP_SIGN } directly via the
@@ -282,19 +243,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   // | }
   // | RCLCPP_INFO(logger_, "Axis remap %s applied (cfg=0x%02X sign=0x%02X)",
   // |   axis_remap_.c_str(), remap_cfg, remap_sign);
-
-  // | // Switch to configured fusion mode
-  // | comres = bno055_set_operation_mode(kOperationMode.at(sensor_mode_));
-  // | if (comres != BNO055_SUCCESS) {
-  // |   RCLCPP_ERROR(
-  // |     logger_, "Failed to set %s operation mode (err=%d)", sensor_mode_.c_str(), comres);
-  // |   bno055_i2c_close();
-  // |   return hardware_interface::CallbackReturn::ERROR;
-  // | }
-  // | rclcpp::sleep_for(std::chrono::milliseconds(20));  // datasheet: >=7 ms
-
-  // | RCLCPP_INFO(logger_, "BNO055 configured in %s fusion mode", sensor_mode_.c_str());
-  // | return hardware_interface::CallbackReturn::SUCCESS;
 
   RCLCPP_INFO(logger_, "BNO08X initialized and configured");
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -566,9 +514,6 @@ BNO08XHardwareInterface::export_state_interfaces()
   return state_interfaces;
 }
 
-// FIXME(rbscr) read() needed for compliance with hardware_component_interface
-// sensor_callback() [bno08x] puts the imu values in the state_interface
-
 // ── read: poll BNO055 and update state interfaces ────────────────────────────
 
 hardware_interface::return_type BNO08XHardwareInterface::read(
@@ -577,56 +522,12 @@ hardware_interface::return_type BNO08XHardwareInterface::read(
   if (enable_mock_) {
     return hardware_interface::return_type::OK;
   }
-// |
-// |   // Orientation — raw quaternion (s16 values, scale = 1/2^14)
-// |   bno055_quaternion_t quat;
-// |   // Angular velocity — raw s16 counts; unit was set to RPS in on_configure
-// |   bno055_gyro_t gyro;
-// |   // Linear acceleration — raw s16 counts; unit was set to m/s² in on_configure
-// |   bno055_linear_accel_t lin_accel;
-// |
-// |   // Use raw read functions + manual scaling to avoid the convert_double variants,
-// |   // which re-read the unit register on every call and may trigger a CONFIG mode
-// |   // switch if the register is ever corrupted (stalling fusion for 19+ ms).
-// |   bool ok =
-// |     (bno055_read_quaternion_wxyz(&quat) == BNO055_SUCCESS) &&
-// |     (bno055_read_gyro_xyz(&gyro) == BNO055_SUCCESS) &&
-// |     (bno055_read_linear_accel_xyz(&lin_accel) == BNO055_SUCCESS);
-// |
-// |   if (!ok) {
-// |     ++consecutive_read_errors_;
-// |     if (consecutive_read_errors_ >= 10) {
-// |       RCLCPP_ERROR(
-// |         logger_, "BNO08X: %d consecutive read failures — reporting ERROR",
-// |         consecutive_read_errors_);
-// |       return hardware_interface::return_type::ERROR;
-// |     }
-// |     RCLCPP_WARN(logger_, "BNO08X read error (streak=%d) — keeping previous values",
-// |       consecutive_read_errors_);
-// |     return hardware_interface::return_type::OK;
-// |   }
-// |   consecutive_read_errors_ = 0;
-// |
-// |   // Normalize quaternion (raw values scale to unit quaternion via QUATERNION_SCALE)
-// |   const double qw = quat.w * QUATERNION_SCALE;
-// |   const double qx = quat.x * QUATERNION_SCALE;
-// |   const double qy = quat.y * QUATERNION_SCALE;
-// |   const double qz = quat.z * QUATERNION_SCALE;
-// |   const double norm = std::sqrt(qw * qw + qx * qx + qy * qy + qz * qz);
-// |   if (norm > 1e-6) {
-// |     hw_orientation_w_ = qw / norm;
-// |     hw_orientation_x_ = qx / norm;
-// |     hw_orientation_y_ = qy / norm;
-// |     hw_orientation_z_ = qz / norm;
-// |   }
-// |
-// |   hw_angular_velocity_x_ = gyro.x / BNO055_GYRO_DIV_RPS;
-// |   hw_angular_velocity_y_ = gyro.y / BNO055_GYRO_DIV_RPS;
-// |   hw_angular_velocity_z_ = gyro.z / BNO055_GYRO_DIV_RPS;
-// |
-// |   hw_linear_acceleration_x_ = lin_accel.x / BNO055_LINEAR_ACCEL_DIV_MSQ;
-// |   hw_linear_acceleration_y_ = lin_accel.y / BNO055_LINEAR_ACCEL_DIV_MSQ;
-// |   hw_linear_acceleration_z_ = lin_accel.z / BNO055_LINEAR_ACCEL_DIV_MSQ;
+
+  // TODO(rbscr) cleanup/simplify if not other logic is needed
+  // In bno055_hardware_interface the sensorvalues were 'transferred'
+  // to the state_interface.
+  // In this hardware_interface the sensor_callback() 'transfers' the sensorvalues
+  // to the state_interface.
 
   return hardware_interface::return_type::OK;
 }
