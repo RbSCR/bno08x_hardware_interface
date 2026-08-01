@@ -7,15 +7,18 @@ Starts the complete ros2_control stack for the BNO08x IMU, including:
 - Controller manager with the BNO08x SensorInterface hardware plugin
 - IMU sensor broadcaster publishing sensor_msgs/Imu to /imu_sensor_broadcaster/imu
 
-Example usage:
+Base usage:
     ros2 launch bno08x_hardware_interface bno08x.launch.py
-    ros2 launch bno08x_hardware_interface bno08x.launch.py i2c_device:=/dev/i2c-bno08x i2c_addr:=4A
-    ros2 launch bno08x_hardware_interface bno08x.launch.py axis_remap:=P2
-    ros2 launch bno08x_hardware_interface bno08x.launch.py enable_mock_mode:=true
-    ros2 launch bno08x_hardware_interface bno08x.launch.py publish_tf:=false
-    ros2 launch bno08x_hardware_interface bno08x.launch.py publish_diagnostics:=false
+
+    See the declared_arguments below for the default values
+
+Example (other) usage:
+    <base-usage> enable_i2c_comm:=true i2c_device:=/dev/i2c-bno08-B i2c_addr:=4B
+    <base-usage> axis_remap:=P2
+    <base-usage> enable_mock_mode:=true
+    <base-usage> publish_tf:=false
+    <base-usage> publish_diagnostics:=false
 """
-# TODO(rbscr) example usage bijwerken
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -42,7 +45,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'i2c_addr',
             default_value='4A',
-            description='I2C device address in hex without 0x prefix (default: 4A = 0x4A)'
+            description='I2C device address in hex without 0x prefix (default: 4A = 0x4A, alternative: 4B)'
         ),
         DeclareLaunchArgument(
             'axis_remap',
