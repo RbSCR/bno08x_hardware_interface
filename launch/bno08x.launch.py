@@ -126,7 +126,6 @@ def generate_launch_description():
         parameters=[robot_description],
     )
 
-    # TODO(rbscr) check imu_broadcaster.yaml nodig?
     # Controller configuration
     controller_config = PathJoinSubstitution(
         [FindPackageShare('bno08x_hardware_interface'), 'config', 'imu_broadcaster.yaml']
