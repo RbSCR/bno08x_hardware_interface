@@ -404,6 +404,18 @@ void BNO08XHardwareInterface::init_sensor()
     RCLCPP_ERROR(logger_, "No sensor reports enabled! Exiting...");
     throw std::runtime_error("No sensor reports enabled");
   }
+
+  // Initialize the watchdog timer
+  auto timeout = std::chrono::milliseconds(2000);
+  watchdog_ = new Watchdog();
+  watchdog_->set_timeout(timeout);
+  watchdog_->set_check_interval(timeout / 2);
+  watchdog_->set_callback([this]() {
+        RCLCPP_ERROR(logger_, "Watchdog timeout! No data received from sensor. Resetting...");
+        this->reset();
+  });
+  watchdog_->start();
+
 }
 
 
@@ -455,13 +467,19 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
  * to get the buffered sensor events
  * called by the poll_timer_ timer
  */
- // TODO(rbscr) fix/update
+ // TODO(rbscr) fix/update / check actually used
 void BNO08XHardwareInterface::poll_timer_callback()
 {
   {
     std::lock_guard<std::mutex> lock(bno08x_mutex_);
     this->bno08x_->poll();
   }
+}
+
+void BNO08XHardwareInterface::reset() {
+    std::lock_guard<std::mutex> lock(bno08x_mutex_);
+    delete bno08x_;
+    this->init_sensor();
 }
 
 void BNO08XHardwareInterface::close_hardware()
@@ -514,7 +532,7 @@ BNO08XHardwareInterface::export_state_interfaces()
   return state_interfaces;
 }
 
-// ── read: poll BNO055 and update state interfaces ────────────────────────────
+// ── read: poll BNO08X and update state interfaces ────────────────────────────
 
 hardware_interface::return_type BNO08XHardwareInterface::read(
     const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)

@@ -94,6 +94,8 @@ private:
   // Poll the sensor for new events
   void poll_timer_callback();
 
+  void reset();
+
   // Suspend the sensor and close the I2C file descriptor.
   // Called by both on_cleanup and on_shutdown.
   void close_hardware();
