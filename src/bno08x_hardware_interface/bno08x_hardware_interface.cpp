@@ -210,21 +210,14 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  // | if (bno055_i2c_open(device.c_str(), i2c_addr_) != 0) {
-  // |   RCLCPP_ERROR(logger_, "Failed to open I2C device %s at address 0x%02X",
-  // |     device.c_str(), i2c_addr_);
-  // |   return hardware_interface::CallbackReturn::ERROR;
-  // | }
-
   // Init & configure sensor
   try {
     init_sensor();
   } catch (const std::exception& e) {
-    // TODO(rbscr) close comm ? compare bno055 (see below)
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  // TODO(rbscr) add chip/sensor info to init_sensor. compare bno0555
+  // ENHANCEMENT(rbscr) add chip/sensor info to init_sensor. compare bno0555
   // | RCLCPP_INFO(
   // |   logger_, "BNO08X detected: chip_id=0x%02X sw_rev=0x%04X",
   // |   sensor_.chip_id, sensor_.sw_rev_id);
@@ -350,7 +343,7 @@ void BNO08XHardwareInterface::init_communication()
 }
 
 
-// TODO(rbscr) init_sensor() : other reports ?
+// ENHANCEMENT(rbscr) other reports, f.e. device info, status, diagnostics
 /**
  * @brief Initialize the sensor
  *
@@ -406,7 +399,7 @@ void BNO08XHardwareInterface::init_sensor()
   }
 
   // Initialize the watchdog timer
-  auto timeout = std::chrono::milliseconds(2000);
+  auto timeout = std::chrono::milliseconds(2000);  // TODO(rbscr) check watchdog rate
   watchdog_ = new Watchdog();
   watchdog_->set_timeout(timeout);
   watchdog_->set_check_interval(timeout / 2);
@@ -428,10 +421,9 @@ void BNO08XHardwareInterface::init_sensor()
  */
 void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* sensor_value)
 {
-  DEBUG_LOG("Sensor Callback");
-  watchdog_->reset();               // TODO(rbscr) check watchdog from bno08x_ros needed
-                                    // if yes: add watchdog  intialize and reset
-                                    // also check needed rate (bno055 hardware interface)
+  RCLCPP_DEBUG(logger_, "Sensor Callback");
+  watchdog_->reset();
+
   switch (sensor_value->sensorId)
   {
     case SH2_MAGNETIC_FIELD_CALIBRATED:
@@ -460,22 +452,6 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
   }
 }
 
-/**
- * @brief Poll the sensor for new events
- *
- * This function is called periodically at the rate of the fastest sensor report
- * to get the buffered sensor events
- * called by the poll_timer_ timer
- */
- // TODO(rbscr) fix/update / check actually used
-void BNO08XHardwareInterface::poll_timer_callback()
-{
-  {
-    std::lock_guard<std::mutex> lock(bno08x_mutex_);
-    this->bno08x_->poll();
-  }
-}
-
 void BNO08XHardwareInterface::reset() {
     std::lock_guard<std::mutex> lock(bno08x_mutex_);
     delete bno08x_;
@@ -485,12 +461,12 @@ void BNO08XHardwareInterface::reset() {
 void BNO08XHardwareInterface::close_hardware()
 {
   if (!enable_mock_) {
-    // TODO(rbscr) suspend sensor / close communication
-    // | uit bno055_hardware_interface:
-    // |    bno055_set_power_mode(BNO055_POWER_MODE_SUSPEND);
-    // |    bno055_i2c_close();
-    RCLCPP_INFO(logger_, "BNO08X suspended and I2C closed");
+    delete watchdog_;
+    delete bno08x_;
+    delete comm_interface_;
+    RCLCPP_INFO(logger_, "BNO08X hardware closed");
   }
+
   hw_orientation_x_ = 0.0;
   hw_orientation_y_ = 0.0;
   hw_orientation_z_ = 0.0;
@@ -502,8 +478,8 @@ void BNO08XHardwareInterface::close_hardware()
   hw_linear_acceleration_y_ = 0.0;
   hw_linear_acceleration_z_ = 0.0;
 
-  hw_magnetic_field_x_ = 0.0;  // TODO(rbscr) magnetic field currently not used
-  hw_magnetic_field_y_ = 0.0;
+  hw_magnetic_field_x_ = 0.0;  // ENHANCEMENT(rbscr) magnetic field currently not used
+  hw_magnetic_field_y_ = 0.0;  // already added in case it's being used
   hw_magnetic_field_z_ = 0.0;
 }
 
@@ -526,7 +502,7 @@ BNO08XHardwareInterface::export_state_interfaces()
   state_interfaces.emplace_back(sensor_name, "linear_acceleration.y", &hw_linear_acceleration_y_);
   state_interfaces.emplace_back(sensor_name, "linear_acceleration.z", &hw_linear_acceleration_z_);
 
-  // TODO(rbscr)  when magnetic field will be used add x / y / z values here
+  // ENHANCEMENT(rbscr)  when magnetic field will be used add x / y / z values here
 
   RCLCPP_INFO(logger_, "Exported 10 state interfaces for sensor '%s'", sensor_name.c_str());
   return state_interfaces;
@@ -541,8 +517,8 @@ hardware_interface::return_type BNO08XHardwareInterface::read(
     return hardware_interface::return_type::OK;
   }
 
-  // TODO(rbscr) cleanup/simplify if not other logic is needed
-  // In bno055_hardware_interface the sensorvalues were 'transferred'
+  // Kind of "dummy" method, needed for ROS2 control hardware-interface.
+  // In bno055_hardware_interface read() is used to 'tranfer' the sensorvalues
   // to the state_interface.
   // In this hardware_interface the sensor_callback() 'transfers' the sensorvalues
   // to the state_interface.
