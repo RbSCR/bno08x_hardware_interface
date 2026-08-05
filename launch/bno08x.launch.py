@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""
+Launch file for the BNO08x IMU hardware interface.
+
+Starts the complete ros2_control stack for the BNO08x IMU, including:
+- Robot state publisher for TF transforms
+- Controller manager with the BNO08x SensorInterface hardware plugin
+- IMU sensor broadcaster publishing sensor_msgs/Imu to /imu_sensor_broadcaster/imu
+
+Base usage:
+    ros2 launch bno08x_hardware_interface bno08x.launch.py
+
+    See the declared_arguments below for the default values
+
+Example (other) usage:
+    <base-usage> enable_i2c_comm:=true i2c_device:=/dev/i2c-bno08-B i2c_addr:=4B
+    <base-usage> axis_remap:=P2
+    <base-usage> enable_mock_mode:=true
+    <base-usage> publish_tf:=false
+    <base-usage> publish_diagnostics:=false
+"""
+
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
+from launch_ros.substitutions import FindPackageShare
+
+
+def generate_launch_description():
+    # Declare arguments
+    declared_arguments = [
+        DeclareLaunchArgument(
+            'enable_i2c_comm',
+            default_value='false',
+            description='Use I2C communication I2C'
+        ),
+        DeclareLaunchArgument(
+            'i2c_device',
+            default_value='/dev/i2c-bno08x',
+            description='I2C device name (e.g. /dev/i2c-bno08x)'
+        ),
+        DeclareLaunchArgument(
+            'i2c_addr',
+            default_value='4A',
+            description='I2C device address in hex without 0x prefix (default: 4A = 0x4A, alternative: 4B)'
+        ),
+        DeclareLaunchArgument(
+            'axis_remap',
+            default_value='P1',
+            description='BNO08X axis placement configuration: P0-P7 (see datasheet Table 3-4)'
+        ),
+        DeclareLaunchArgument(
+            'enable_mock_mode',
+            default_value='false',
+            description='Use mock/simulation mode (no hardware required)'
+        ),
+        DeclareLaunchArgument(
+            'sensor_mode',
+            default_value='NDOF',
+            description=(
+                'BNO08X fusion mode: NDOF (absolute, 9-DOF), '
+                'NDOF_FMC_OFF (absolute, fast mag-cal disabled), '
+                'IMUPLUS (relative, 6-DOF, no magnetometer)'
+            )
+        ),
+        DeclareLaunchArgument(
+            'publish_tf',
+            default_value='true',
+            description=(
+                'Publish a dynamic world→base_link TF from IMU orientation for RViz visualization'
+            ),
+        ),
+        DeclareLaunchArgument(
+            'publish_diagnostics',
+            default_value='true',
+            description=(
+                'Run the bno08x_diagnostics companion node to publish sensor health '
+                'and calibration status to /diagnostics at 1 Hz'
+            ),
+        ),
+    ]
+
+    enable_i2c_comm = LaunchConfiguration('enable_i2c_comm')
+    i2c_device = LaunchConfiguration('i2c_device')
+    i2c_addr = LaunchConfiguration('i2c_addr')
+    axis_remap = LaunchConfiguration('axis_remap')
+    enable_mock = LaunchConfiguration('enable_mock_mode')
+    sensor_mode = LaunchConfiguration('sensor_mode')
+    publish_tf = LaunchConfiguration('publish_tf')
+    publish_diagnostics = LaunchConfiguration('publish_diagnostics')
+
+    # Get URDF via xacro
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name='xacro')]),
+            ' ',
+            PathJoinSubstitution(
+                [FindPackageShare('bno08x_hardware_interface'), 'config', 'bno08x.urdf.xacro']
+            ),
+            ' ',
+            'enable_i2c_comm:=', enable_i2c_comm,
+            ' ',
+            'i2c_device:=', i2c_device,
+            ' ',
+            'i2c_addr:=', i2c_addr,
+            ' ',
+            'axis_remap:=', axis_remap,
+            ' ',
+            'enable_mock_mode:=', enable_mock,
+            ' ',
+            'sensor_mode:=', sensor_mode,
+        ]
+    )
+    robot_description = {
+        'robot_description': ParameterValue(robot_description_content, value_type=str)
+    }
+
+    # Robot state publisher
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='both',
+        parameters=[robot_description],
+    )
+
+    # Controller configuration
+    controller_config = PathJoinSubstitution(
+        [FindPackageShare('bno08x_hardware_interface'), 'config', 'imu_broadcaster.yaml']
+    )
+
+    # Controller manager (ros2_control_node)
+    controller_manager_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        output='both',
+        parameters=[robot_description, controller_config],
+    )
+
+    # IMU sensor broadcaster spawner
+    imu_broadcaster_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['imu_sensor_broadcaster', '--controller-manager', '/controller_manager'],
+    )
+
+    # Optional: relay IMU orientation to TF for RViz 3D visualization.
+    # Set fixed frame to 'world' in RViz to see the sensor orientation animate.
+    imu_tf_broadcaster_node = Node(
+        package='bno08x_hardware_interface',
+        executable='imu_tf_broadcaster',
+        name='imu_tf_broadcaster',
+        output='screen',
+        condition=IfCondition(publish_tf),
+    )
+
+    # TODO(rbscr) diagnostics_node nog maken (of in hardware_interface opnemen)
+    # Optional: publish sensor health and calibration status to /diagnostics at 1 Hz.
+    # Compatible with rqt_robot_monitor and diagnostic_aggregator.
+    bno08x_diagnostics_node = Node(
+        package='bno08x_hardware_interface',
+        executable='bno08x_diagnostics',
+        name='bno8x_diagnostics',
+        output='screen',
+        parameters=[{
+            'enable_i2c_comm': ParameterValue(enable_i2c_comm, value_type=str),
+            'i2c_device':  i2c_device,
+            'i2c_addr':    ParameterValue(i2c_addr, value_type=str),
+            'sensor_mode': sensor_mode,
+            'enable_mock_mode': ParameterValue(enable_mock, value_type=str),
+        }],
+        condition=IfCondition(publish_diagnostics),
+    )
+
+    return LaunchDescription(
+        declared_arguments + [
+            robot_state_publisher_node,
+            controller_manager_node,
+            imu_broadcaster_spawner,
+            imu_tf_broadcaster_node,
+            bno08x_diagnostics_node,
+        ]
+    )
