@@ -408,9 +408,7 @@ void BNO08XHardwareInterface::init_sensor()
         this->reset();
   });
   watchdog_->start();
-
 }
-
 
 /**
  * @brief Callback function for sensor events
