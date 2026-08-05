@@ -27,7 +27,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
-// TODO(rbscr)  check needed
 #include "bno08x_driver/bno08x.hpp"
 #include "bno08x_driver/i2c_interface.hpp"
 #include "bno08x_driver/uart_interface.hpp"
@@ -121,17 +120,10 @@ private:
   bool        enable_mock_{false};
   std::string sensor_mode_{"NDOF"};  // fusion operation mode   // TODO(rbscr) check remove
 
-
-  // Parameters  // TODO(rbscr)  merge the 2 'parameter' sections
-  std::string frame_id_;                  // TODO(rbscr) check used/needed
   bool publish_magnetic_field_{true};  // FIXME temporarely set to true, get from param?
   int magnetic_field_rate_;  // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses param
   bool publish_imu_{true};      // FIXME temp. set to true, get from param?
   int imu_rate_;      // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses parameter
-
-  bool publish_orientation_;           // TODO(rbscr) check used/needed
-  bool publish_acceleration_;          // TODO(rbscr) check used/needed
-  bool publish_angular_velocity_;      // TODO(rbscr) check used/needed
 
   // Consecutive read failures before returning ERROR (threshold = 10)
   int consecutive_read_errors_{0};  // TODO(rbscr) check used / needed in bno08x
