@@ -109,6 +109,25 @@ if(BUILD_TESTING)
   )
 
   ament_lint_auto_find_test_dependencies()
+
+  # - - - -
+
+  find_package(ament_cmake_gmock REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gmock(test_i2c_mock test/bno08x_driver/i2c_interface_mock_test.cpp)
+  if(TARGET test_i2c_mock)
+    target_include_directories(test_i2c_mock PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    )
+  endif()
+
+  ament_add_gmock(test_watchdog test/bno08x_driver/watchdog_test.cpp)
+  if(TARGET test_watchdog)
+    target_include_directories(test_watchdog PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    )
+  endif()
 endif()
 
 ament_package()
