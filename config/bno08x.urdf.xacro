@@ -4,11 +4,8 @@
   <!-- copied (and adapted) from bno055_hardware_interface (github.com/adityakamath) -->
 
   <!-- Arguments -->
-  <xacro:arg name="enable_i2c_comm"  default="true"/>  <!-- I2C communication -->
   <xacro:arg name="i2c_device"       default="/dev/i2c-bno08x"/>
   <xacro:arg name="i2c_addr"         default="4A"/>    <!-- hex, no 0x prefix: 4A = 0x4A -->
-  <xacro:arg name="enable_spi_comm"  default="false"/> <!-- placeholder, spi not implemented-->
-  <xacro:arg name="enable_uart_comm" default="false"/> <!-- placeholder, uart not implemented -->
   <xacro:arg name="axis_remap"       default="P1"/>    <!-- P0-P7, see BNO055 datasheet Table 3-4 -->
   <xacro:arg name="enable_mock_mode" default="false"/>
   <xacro:arg name="sensor_mode"      default="NDOF"/>  <!-- Fusion mode: NDOF, NDOF_FMC_OFF, IMUPLUS (default: NDOF) -->
@@ -40,13 +37,8 @@
       <plugin>bno08x_hardware_interface/BNO08XHardwareInterface</plugin>
 
       <!-- I2C Parameters -->
-      <param name="enable_i2c_comm">$(arg enable_i2c_comm)</param>
       <param name="i2c_device">$(arg i2c_device)</param>  <!-- I2C device name (default: /dev/i2c-bno08x) -->
       <param name="i2c_addr">$(arg i2c_addr)</param>      <!-- I2C address in hex, no 0x prefix (default: 28 = 0x28) -->
-
-      <!-- SPI and UART placeholder parameters -->
-      <param name="enable_spi_comm">$(arg enable_spi_comm)</param>
-      <param name="enable_uart_comm">$(arg enable_uart_comm)</param>
 
       <!-- Sensor Configuration -->
       <param name="axis_remap">$(arg axis_remap)</param>     <!-- Axis placement config: P0-P7 (default: P1) -->

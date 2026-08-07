@@ -26,12 +26,12 @@ import rclpy
 # ── Hardware detection (evaluated once at import time) ────────────────────────
 
 def _bno08x_available() -> bool:
-    """Return True if BNO08X responds at /dev/i2c-1, address 0x28."""
+    """Return True if BNO08X responds at /dev/i2c-1, address 0x4A."""
     if not os.path.exists('/dev/i2c-1'):
         return False
     try:
         result = subprocess.run(
-            ['i2cget', '-y', '1', '0x28', '0x00'],
+            ['i2cget', '-y', '1', '0x4A', '0x00'],
             capture_output=True,
             timeout=3,
         )
@@ -63,8 +63,8 @@ def generate_test_description():
     bno08x_launch = os.path.join(pkg_share, 'launch', 'bno08x.launch.py')
 
     launch_args = {
-        'i2c_bus':              '1',
-        'i2c_addr':             '28',
+        'i2c_device':           '/dev/i2c-1',
+        'i2c_addr':             '4A',
         'axis_remap':           'P1',
         'publish_diagnostics':  'true',
     }

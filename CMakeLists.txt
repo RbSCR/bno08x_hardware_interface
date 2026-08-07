@@ -97,6 +97,10 @@ install(FILES bno08x_hardware_interface.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(DIRECTORY config launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
 if(BUILD_TESTING)
 
   # = = = Linting = = =
