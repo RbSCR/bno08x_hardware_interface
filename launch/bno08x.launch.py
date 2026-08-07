@@ -69,8 +69,9 @@ def generate_launch_description():
             ),
         ),
         DeclareLaunchArgument(
+            # TODO(rbscr) diagnostics temporarily default disabled
             'publish_diagnostics',
-            default_value='true',
+            default_value='false',
             description=(
                 'Run the bno08x_diagnostics companion node to publish sensor health '
                 'and calibration status to /diagnostics at 1 Hz'

@@ -72,7 +72,7 @@ public:
 
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
 
-  // TODO(rbscr) read() [from bno055] needed for compliance with hardware_component_interface
+  // read() needed for compliance with hardware_component_interface
   hardware_interface::return_type read(
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
