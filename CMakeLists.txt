@@ -14,6 +14,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 
 # ── SH2 LIBRAY (kindof external submodule) ────────────────────
@@ -89,6 +90,20 @@ target_link_libraries(bno08x_hardware_interface
 
 # Export hardware interface as plugin
 pluginlib_export_plugin_description_file(hardware_interface bno08x_hardware_interface.xml)
+
+# ── IMU TF broadcaster (optional visualization helper) ───────────────────────
+add_executable(imu_tf_broadcaster
+  src/bno08x_hardware_interface/imu_tf_broadcaster.cpp
+)
+target_link_libraries(imu_tf_broadcaster
+  rclcpp::rclcpp
+  ${geometry_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  tf2_ros::tf2_ros
+)
+install(TARGETS imu_tf_broadcaster
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(TARGETS bno08x_hardware_interface
   DESTINATION lib/${PROJECT_NAME})
