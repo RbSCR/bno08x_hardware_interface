@@ -104,17 +104,11 @@ private:
   bool parse_bool_param(const std::string & key, bool default_value) const;
 
 
-  // Check only one of three booleans is true.
-  bool exactly_one_boolean_true(bool a, bool b, bool c);
-
   rclcpp::Logger logger_;
 
   // Parameters
-  bool        enable_i2c_{true};
   std::string i2c_device_;
   uint8_t     i2c_addr_{0x4A};  // Default 0x4A, alternative 0x4B  Par 1.2.2.1 Datasheet BNO08X
-  bool        enable_spi_{false};
-  bool        enable_uart_{false};
   std::string axis_remap_{"P1"};    // TODO(rbscr) bno08x uses different remap-names
                                     // TODO(rbscr) check if remap possible on bno08x-driver
   bool        enable_mock_{false};

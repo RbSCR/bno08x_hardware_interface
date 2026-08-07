@@ -83,10 +83,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   RCLCPP_INFO(logger_, "Initializing BNO08X hardware interface: %s", info_.name.c_str());
 
-
-  // I2C enable
-  enable_i2c_ = parse_bool_param("enable_i2c_comm", true);
-
   // i2c_device
   if (const auto it = info_.hardware_parameters.find("i2c_device");
     it != info_.hardware_parameters.end())
@@ -106,28 +102,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     }
   }
 
-  // SPI enable
-  enable_spi_ = parse_bool_param("enable_spi_comm", false);
-
-  // I2C enable
-  enable_uart_ = parse_bool_param("enable_uart_comm", false);
-
-  // Note: SPI and UART communication is not implemented
-  // See comm_interface.hhp and i2c / spi / uart_interface.hpp
-  // When implemented additional parameter(s) for the specific device will be needed.
-
-  // Check enabled communication(s)
-  if (!(enable_i2c_ || enable_spi_ || enable_uart_))
-  {
-    RCLCPP_ERROR(logger_, "No communication enabled");
-    return hardware_interface::CallbackReturn::ERROR;
-  }
-
-  if (!exactly_one_boolean_true(enable_i2c_, enable_spi_, enable_uart_))
-  {
-    RCLCPP_ERROR(logger_, "Multiple communications enabled. Enable only one.");
-    return hardware_interface::CallbackReturn::ERROR;
-  }
 
   // axis_remap (default: "P1")
   if (const auto it = info_.hardware_parameters.find("axis_remap");
@@ -289,58 +263,21 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_error(
 
 void BNO08XHardwareInterface::init_communication()
 {
-  if (enable_i2c_) {
-    std::string device = i2c_device_;
+  std::string device = i2c_device_;
     // | std::string address;
     // | this->get_parameter("i2c.bus", device);
     // | this->get_parameter("i2c.address", address);
-    RCLCPP_INFO(logger_, "Communication Interface: I2C");
-    try
+  RCLCPP_INFO(logger_, "Communication Interface: I2C");
+  try
     {
-      // Note: hier geen std::stoi(address, nullptr, 16) zoals in bno08x_ros.cpp
-      // bij ophalen parameter al met std::stoul( .. , nullptr, 16) omgezet/gecontroleerd
       comm_interface_ = new I2CInterface(device, i2c_addr_);
     }
-    catch (const std::exception& e)
+  catch (const std::exception& e)
     {
       RCLCPP_ERROR(logger_, "Failed to create I2CInterface: %s", e.what());
       throw std::runtime_error("I2CInterface creation failed");
     }
-  } else {
-    if (enable_uart_) {
-      RCLCPP_INFO(logger_, "Communication Interface: UART");
-      std::string device = "dummy-uart-device";
-      // | this->get_parameter("uart.device", device);
-      try
-      {
-        comm_interface_ = new UARTInterface(device);
-      }
-      catch (const std::exception& e)
-      {
-        RCLCPP_ERROR(logger_, "UART Interface not implemented: %s", e.what());
-        throw std::runtime_error("UARTInterface creation failed");
-      }
-    } else {
-      if (enable_spi_) {
-        RCLCPP_INFO(logger_, "Communication Interface: SPI");
-        std::string device = "dummy-spi-device";
-        // | this->get_parameter("spi.device", device);
-        try
-        {
-          comm_interface_ = new SPIInterface(device);
-        }
-        catch (const std::exception& e)
-        {
-          RCLCPP_ERROR(logger_, "SPI Interface not implemented: %s", e.what());
-          throw std::runtime_error("SPIInterface creation failed");
-        }
-      } else {
-        RCLCPP_ERROR(logger_, "No communication interface enabled!");
-        throw std::runtime_error("Communication interface setup failed");
-      }
-    }
   }
-}
 
 
 // ENHANCEMENT(rbscr) other reports, f.e. device info, status, diagnostics
@@ -532,9 +469,6 @@ bool BNO08XHardwareInterface::parse_bool_param(
   return it->second == "true";
 }
 
-bool BNO08XHardwareInterface::exactly_one_boolean_true(bool a, bool b, bool c) {
-    return (a && !b && !c) || (!a && b && !c) || (!a && !b && c);
-}
 }  // namespace bno08x_hardware_interface
 
 PLUGINLIB_EXPORT_CLASS(

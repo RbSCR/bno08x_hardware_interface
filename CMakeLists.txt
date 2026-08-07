@@ -97,7 +97,13 @@ install(FILES bno08x_hardware_interface.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(DIRECTORY config launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
 if(BUILD_TESTING)
+
+  # = = = Linting = = =
   find_package(ament_lint_auto REQUIRED)
   # Linters to be used in the 'auto-linting' are mentioned in package.xml
 
@@ -109,6 +115,54 @@ if(BUILD_TESTING)
   )
 
   ament_lint_auto_find_test_dependencies()
+
+  # = = = Tests = = =
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_gmock REQUIRED)
+  find_package(launch_testing_ament_cmake REQUIRED)
+
+  # - - - bno08x_driver tests - - -
+  ament_add_gmock(test_driver_i2c_mock
+    test/bno08x_driver/i2c_interface_mock_test.cpp
+  )
+  if(TARGET test_driver_i2c_mock)
+    target_include_directories(test_driver_i2c_mock PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    )
+  endif()
+
+  ament_add_gmock(test_driver_watchdog test/bno08x_driver/watchdog_test.cpp)
+  if(TARGET test_driver_watchdog)
+    target_include_directories(test_driver_watchdog PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    )
+  endif()
+
+  # - - - bno08x_hardware_interface tests - - -
+
+  # C++ unit / integration tests
+  # - on_init validation (no hardware)
+  # - export_state_interfaces (no hardware)
+  # - lifecycle transitions (real hardware when available, mock mode otherwise)
+  # - read() sanity checks (real hardware when available, mock mode otherwise)
+  ament_add_gtest(test_hal_hardware_interface
+    test/bno08x_hardware_interface/test_hardware_interface.cpp
+  )
+  target_link_libraries(test_hal_hardware_interface
+    ${PROJECT_NAME}
+    ${rclcpp_TARGETS}
+    hardware_interface::hardware_interface
+  )
+  target_include_directories(test_hal_hardware_interface PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${BNO08X_DRIVER_DIR}
+  )
+
+  # Python launch test — full stack against real BNO08X hardware or mock mode.
+  # Uses enable_mock_mode:=true when the sensor is absent so CI always runs all tests.
+  add_launch_test(test/bno08x_hardware_interface/test_bno08x.launch.py)
+
+
 endif()
 
 ament_package()

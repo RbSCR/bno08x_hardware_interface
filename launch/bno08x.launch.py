@@ -13,7 +13,7 @@ Base usage:
     See the declared_arguments below for the default values
 
 Example (other) usage:
-    <base-usage> enable_i2c_comm:=true i2c_device:=/dev/i2c-bno08-B i2c_addr:=4B
+    <base-usage> i2c_device:=/dev/i2c-bno08-B i2c_addr:=4B
     <base-usage> axis_remap:=P2
     <base-usage> enable_mock_mode:=true
     <base-usage> publish_tf:=false
@@ -32,11 +32,6 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     # Declare arguments
     declared_arguments = [
-        DeclareLaunchArgument(
-            'enable_i2c_comm',
-            default_value='false',
-            description='Use I2C communication I2C'
-        ),
         DeclareLaunchArgument(
             'i2c_device',
             default_value='/dev/i2c-bno08x',
@@ -83,7 +78,6 @@ def generate_launch_description():
         ),
     ]
 
-    enable_i2c_comm = LaunchConfiguration('enable_i2c_comm')
     i2c_device = LaunchConfiguration('i2c_device')
     i2c_addr = LaunchConfiguration('i2c_addr')
     axis_remap = LaunchConfiguration('axis_remap')
@@ -100,8 +94,6 @@ def generate_launch_description():
             PathJoinSubstitution(
                 [FindPackageShare('bno08x_hardware_interface'), 'config', 'bno08x.urdf.xacro']
             ),
-            ' ',
-            'enable_i2c_comm:=', enable_i2c_comm,
             ' ',
             'i2c_device:=', i2c_device,
             ' ',
@@ -165,7 +157,6 @@ def generate_launch_description():
         name='bno8x_diagnostics',
         output='screen',
         parameters=[{
-            'enable_i2c_comm': ParameterValue(enable_i2c_comm, value_type=str),
             'i2c_device':  i2c_device,
             'i2c_addr':    ParameterValue(i2c_addr, value_type=str),
             'sensor_mode': sensor_mode,
