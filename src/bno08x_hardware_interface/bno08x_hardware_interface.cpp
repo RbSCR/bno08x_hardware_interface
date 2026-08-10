@@ -36,18 +36,44 @@
 namespace
 {
 
-// FIXME(rbscr) BNO08X has a different axis remap
-// Axis remap lookup: P0-P7 -> { AXIS_MAP_CONFIG byte, AXIS_MAP_SIGN byte }
-// Values from BNO055 datasheet Table 3-4 (same as flynneva/bno055)
-const std::map<std::string, std::pair<uint8_t, uint8_t>> kAxisRemap = {
-  {"P0", {0x21, 0x04}},
-  {"P1", {0x24, 0x00}},
-  {"P2", {0x24, 0x06}},
-  {"P3", {0x21, 0x02}},
-  {"P4", {0x24, 0x03}},
-  {"P5", {0x21, 0x01}},
-  {"P6", {0x21, 0x07}},
-  {"P7", {0x24, 0x05}},
+  // Quaternion values for axis remap
+struct QVal {
+    static constexpr double Zero = 0.0;
+    static constexpr double One = 1.0;
+    static constexpr double NegOne = -1.0;
+    static constexpr double Half = 0.5 ;
+    static constexpr double NegHalf = -0.5;
+    static constexpr double HalfSqrtTwo = 0.7071067812;
+    static constexpr double NegHalfSqrtTwo = -0.7071067812;
+};
+
+// Axis remap lookup: East/West North/South Up/Down key -> { Quaternion }
+// Names and values from BNO08X datasheet Table 4-3  page 41
+const std::map<std::string, sh2_Quaternion_t> kAxisRemap = {
+  {"East-North-Up", {QVal::Zero, QVal::Zero, QVal::Zero, QVal::One}},
+  {"North-West-Up", {QVal::Zero, QVal::Zero, QVal::HalfSqrtTwo, QVal::HalfSqrtTwo}},
+  {"West-South-Up", {QVal::Zero, QVal::Zero, QVal::One, QVal::Zero}},
+  {"South-East-Up",  {QVal::Zero, QVal::Zero, QVal::NegHalfSqrtTwo, QVal::HalfSqrtTwo}},
+  {"East-South-Down", {QVal::Zero, QVal::NegOne, QVal::Zero, QVal::Zero}},
+  {"North-East-Down", {QVal::NegHalfSqrtTwo, QVal::NegHalfSqrtTwo, QVal::Zero, QVal::Zero}},
+  {"West-North-Down", {QVal::NegOne, QVal::Zero, QVal::Zero, QVal::Zero}},
+  {"South-West-Down", {QVal::NegHalfSqrtTwo, QVal::HalfSqrtTwo, QVal::Zero, QVal::Zero}},
+  {"Up-South-East", {QVal::Zero, QVal::NegHalfSqrtTwo, QVal::HalfSqrtTwo, QVal::Zero}},
+  {"North-Up-East", {QVal::NegHalf, QVal::NegHalf, QVal::Half, QVal::Half}},
+  {"Down-North-East", {QVal::NegHalfSqrtTwo, QVal::Zero, QVal::Zero, QVal::HalfSqrtTwo}},
+  {"South-Down-East", {QVal::NegHalf, QVal::Half, QVal::NegHalf, QVal::Half}},
+  {"Up-North-West", {QVal::NegHalfSqrtTwo, QVal::Zero, QVal::Zero, QVal::NegHalfSqrtTwo}},
+  {"North-Down-West", {QVal::NegHalf, QVal::NegHalf, QVal::NegHalf, QVal::NegHalf}},
+  {"Down-South-West", {QVal::Zero, QVal::NegHalfSqrtTwo, QVal::NegHalfSqrtTwo, QVal::Zero}},
+  {"South-Up-West", {QVal::Half, QVal::NegHalf, QVal::NegHalf, QVal::Half}},
+  {"Up-East-North", {QVal::NegHalf, QVal::NegHalf, QVal::Half, QVal::NegHalf}},
+  {"West-Up-North", {QVal::NegHalfSqrtTwo, QVal::Zero, QVal::HalfSqrtTwo, QVal::Zero}},
+  {"Down-West-North", {QVal::NegHalf, QVal::Half, QVal::Half, QVal::Half}},
+  {"East-Down-North", {QVal::Zero, QVal::NegHalfSqrtTwo, QVal::Zero, QVal::NegHalfSqrtTwo}},
+  {"Up-West-South", {QVal::Half, QVal::NegHalf, QVal::Half,  QVal::Half}},
+  {"West-Down-South" , {QVal::NegHalfSqrtTwo, QVal::Zero, QVal::NegHalfSqrtTwo, QVal::Zero}},
+  {"Down-East-South" , {QVal::NegHalf, QVal::NegHalf, QVal::NegHalf, QVal::Half}},
+  {"East-Up-South", {QVal::Zero, QVal::NegHalfSqrtTwo, QVal::Zero, QVal::HalfSqrtTwo}},
 };
 
 // TODO(rbscr) check operation mode of BNO08X
@@ -88,6 +114,11 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     it != info_.hardware_parameters.end())
   {
     i2c_device_ = it->second;
+
+    if (i2c_device_.empty() ) {
+      RCLCPP_ERROR(logger_, "No i2c_device");
+      return hardware_interface::CallbackReturn::ERROR;
+    }
   }
 
   // i2c_addr (default: 0x4A   alternative: 0x4B)
@@ -102,17 +133,23 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     }
   }
 
-
-  // axis_remap (default: "P1")
+  // axis_remap (default: "East-North-Up")
   if (const auto it = info_.hardware_parameters.find("axis_remap");
     it != info_.hardware_parameters.end())
   {
     axis_remap_ = it->second;
+  } else {
+     RCLCPP_ERROR(logger_, "No axis_remap");
+     return hardware_interface::CallbackReturn::ERROR;
   }
   if (kAxisRemap.find(axis_remap_) == kAxisRemap.end()) {
-    RCLCPP_ERROR(logger_, "Invalid axis_remap '%s'. Must be P0-P7.", axis_remap_.c_str());
+    RCLCPP_ERROR(logger_, "Invalid axis_remap '%s'. "
+                          "Must be a valid combination of North | South, East | West, Up | Down, "
+                          "with a dash between the 3 words, i.e. format <xxx>-<xxx>-<xxx> "
+                          "See BNO08X datasheet page 41.", axis_remap_.c_str());
     return hardware_interface::CallbackReturn::ERROR;
   }
+
 
   // enable_mock_mode (default: false)
   enable_mock_ = parse_bool_param("enable_mock_mode", false);
@@ -192,24 +229,14 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   }
 
   // ENHANCEMENT(rbscr) add chip/sensor info to init_sensor. compare bno0555
-  // | RCLCPP_INFO(
-  // |   logger_, "BNO08X detected: chip_id=0x%02X sw_rev=0x%04X",
-  // |   sensor_.chip_id, sensor_.sw_rev_id);
 
-  // FIXME(rbscr) Use axis remap in init_sensor ? compare bno055 (see below)
-  // | // Axis remap: write { AXIS_MAP_CONFIG, AXIS_MAP_SIGN } directly via the
-  // | // wired bus_write callback (same values as flynneva/bno055 P-code table)
-  // | const auto & remap = kAxisRemap.at(axis_remap_);
-  // | u8 remap_cfg  = remap.first;
-  // | u8 remap_sign = remap.second;
-  // | if (sensor_.bus_write(sensor_.dev_addr, BNO055_AXIS_MAP_CONFIG_ADDR, &remap_cfg, 1) != 0) {
-  // |   RCLCPP_WARN(logger_, "Axis remap: failed to write AXIS_MAP_CONFIG register");
-  // | }
-  // | if (sensor_.bus_write(sensor_.dev_addr, BNO055_AXIS_MAP_SIGN_ADDR, &remap_sign, 1) != 0) {
-  // |   RCLCPP_WARN(logger_, "Axis remap: failed to write AXIS_MAP_SIGN register");
-  // | }
-  // | RCLCPP_INFO(logger_, "Axis remap %s applied (cfg=0x%02X sign=0x%02X)",
-  // |   axis_remap_.c_str(), remap_cfg, remap_sign);
+  // Remap axis
+  sh2_Quaternion_t quat = kAxisRemap.at(axis_remap_);
+  if (!this->bno08x_->setReorientation(&quat)) {
+    RCLCPP_WARN(logger_, "Failed to remap axis to %s", axis_remap_.c_str());
+  } else {
+    RCLCPP_INFO(logger_, "Axis remap to %s succesfull", axis_remap_.c_str());
+  }
 
   RCLCPP_INFO(logger_, "BNO08X initialized and configured");
   return hardware_interface::CallbackReturn::SUCCESS;

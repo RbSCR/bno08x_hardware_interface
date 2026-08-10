@@ -68,7 +68,7 @@ def generate_test_description():
     launch_args = {
         'i2c_device':           '/dev/i2c-1',
         'i2c_addr':             '4A',
-        'axis_remap':           'P1',
+        'axis_remap':           'East-North-Up',
         'publish_diagnostics':  'false',
     }
     # TODO(rbscr)  diagnostics temporarily disabled, will be future enhancement
