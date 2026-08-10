@@ -25,7 +25,7 @@ using hardware_interface::return_type;
 hardware_interface::HardwareInfo make_valid_imu_info(
   const std::string & i2c_device = "/dev/i2c-bn08x",
   const std::string & i2c_addr = "4A",
-  const std::string & axis_remap = "P1")
+  const std::string & axis_remap = "East-North-Up")
 {
   hardware_interface::HardwareInfo info;
   info.hardware_parameters["i2c_device"] = i2c_device;
@@ -97,7 +97,13 @@ TEST(InitTest, ValidAllSensorModes)
 
 TEST(InitTest, ValidAllAxisRemaps)
 {
-  for (const auto & remap : {"P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7"}) {
+  for (const auto & remap : {
+          "East-North-Up", "North-West-Up", "West-South-Up", "South-East-Up",
+          "East-South-Down", "North-East-Down", "West-North-Down", "South-West-Down",
+          "Up-South-East", "North-Up-East", "Down-North-East", "South-Down-East",
+          "Up-North-West", "North-Down-West", "Down-South-West", "South-Up-West",
+          "Up-East-North", "West-Up-North", "Down-West-North", "East-Down-North",
+          "Up-West-South", "West-Down-South", "Down-East-South", "East-Up-South"}) {
     bno08x_hardware_interface::BNO08XHardwareInterface hw;
     EXPECT_EQ(hw.on_init(make_valid_imu_info("/dev/i2c-bno08x", "4A", remap)),
               CallbackReturn::SUCCESS) << "axis_remap=" << remap;
@@ -120,10 +126,14 @@ TEST(InitTest, InvalidParamsFail)
   EXPECT_EQ(init(two_sensors), CallbackReturn::ERROR);
 
   // wrong axis_remap
-  EXPECT_EQ(init(make_valid_imu_info("/dev/i2c-bno08x", "4A", "P9")), CallbackReturn::ERROR);
+  EXPECT_EQ(init(make_valid_imu_info("/dev/i2c-bno08x", "4A", "East-East-North")),
+            CallbackReturn::ERROR);
+
+   EXPECT_EQ(init(make_valid_imu_info("/dev/i2c-bno08x", "4A", "Up-Down-South")),
+            CallbackReturn::ERROR);
 
   // empty i2c_device
-  EXPECT_EQ(init(make_valid_imu_info("", "4A", "P9")), CallbackReturn::ERROR);
+  EXPECT_EQ(init(make_valid_imu_info("", "4A", "East-North-Up" )), CallbackReturn::ERROR);
 
   auto empty_remap = make_valid_imu_info();
   empty_remap.hardware_parameters["axis_remap"] = "";

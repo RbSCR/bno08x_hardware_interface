@@ -14,7 +14,7 @@ Base usage:
 
 Example (other) usage:
     <base-usage> i2c_device:=/dev/i2c-bno08-B i2c_addr:=4B
-    <base-usage> axis_remap:=P2
+    <base-usage> axis_remap:=North-West-Up
     <base-usage> enable_mock_mode:=true
     <base-usage> publish_tf:=false
     <base-usage> publish_diagnostics:=false
@@ -44,8 +44,10 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'axis_remap',
-            default_value='P1',
-            description='BNO08X axis placement configuration: P0-P7 (see datasheet Table 3-4)'
+            default_value='East-North-Up',
+            description='BNO08X axis placement configuration: valid combination of North East South West Up Down'
+                'in the format <xxx>-<xxx>-<xxx>'
+                'See datasheet Figure 4-3  page 41 for the valid combinations.'
         ),
         DeclareLaunchArgument(
             'enable_mock_mode',
