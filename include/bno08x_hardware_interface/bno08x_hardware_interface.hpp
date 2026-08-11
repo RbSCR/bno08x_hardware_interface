@@ -116,7 +116,7 @@ private:
 
   bool publish_magnetic_field_{true};  // FIXME temporarely set to true, get from param?
   int magnetic_field_rate_;  // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses param
-  bool publish_imu_{true};      // FIXME temp. set to true, get from param?
+
   int imu_rate_;      // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses parameter
 
   // Consecutive read failures before returning ERROR (threshold = 10)
