@@ -307,7 +307,7 @@ void BNO08XHardwareInterface::init_communication()
   }
 
 
-// ENHANCEMENT(rbscr) other reports, f.e. device info, status, diagnostics
+// ENHANCEMENT(rbscr) other functionalities f.e. device info, status, diagnostics
 /**
  * @brief Initialize the sensor
  *
@@ -332,6 +332,28 @@ void BNO08XHardwareInterface::init_sensor()
     throw std::runtime_error("BNO08x initialization failed");
   }
 
+  bool imu_report_issues{false};
+  if (!this->bno08x_->enable_report(SH2_ROTATION_VECTOR, 1000000 / this->imu_rate_))
+  {  // Hz to us
+    RCLCPP_ERROR(logger_, "Failed to enable rotation vector sensor");
+    imu_report_issues = true;
+  }
+  if (!this->bno08x_->enable_report(SH2_ACCELEROMETER, 1000000 / this->imu_rate_))
+  {  // Hz to us
+    RCLCPP_ERROR(logger_, "Failed to enable accelerometer sensor");
+    imu_report_issues = true;
+  }
+  if (!this->bno08x_->enable_report(SH2_GYROSCOPE_CALIBRATED, 1000000 / this->imu_rate_))
+  {  // Hz to us
+    RCLCPP_ERROR(logger_, "Failed to enable gyroscope sensor");
+    imu_report_issues = true;
+  }
+  if (imu_report_issues)
+  {
+    RCLCPP_ERROR(logger_, "Failed to enable all 3 IMU reports");
+    throw std::runtime_error("BNO08x IMU reports failed");
+  }
+
   if (publish_magnetic_field_)
   {
     if (!this->bno08x_->enable_report(SH2_MAGNETIC_FIELD_CALIBRATED,
@@ -339,27 +361,6 @@ void BNO08XHardwareInterface::init_sensor()
     {  // Hz to us
       RCLCPP_ERROR(logger_, "Failed to enable magnetic field sensor");
     }
-  }
-
-  if (publish_imu_)
-  {
-    if (!this->bno08x_->enable_report(SH2_ROTATION_VECTOR, 1000000 / this->imu_rate_))
-    {  // Hz to us
-      RCLCPP_ERROR(logger_, "Failed to enable rotation vector sensor");
-    }
-    if (!this->bno08x_->enable_report(SH2_ACCELEROMETER, 1000000 / this->imu_rate_))
-    {  // Hz to us
-      RCLCPP_ERROR(logger_, "Failed to enable accelerometer sensor");
-    }
-    if (!this->bno08x_->enable_report(SH2_GYROSCOPE_CALIBRATED, 1000000 / this->imu_rate_))
-    {  // Hz to us
-      RCLCPP_ERROR(logger_, "Failed to enable gyroscope sensor");
-    }
-  }
-  if (!(publish_imu_ || publish_magnetic_field_))
-  {
-    RCLCPP_ERROR(logger_, "No sensor reports enabled! Exiting...");
-    throw std::runtime_error("No sensor reports enabled");
   }
 
   // Initialize the watchdog timer
