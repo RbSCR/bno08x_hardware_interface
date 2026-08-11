@@ -150,6 +150,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
+  // enable_magnetic_field (default: false)
+  enable_magnetic_field_ = parse_bool_param("enable_magnetic_field", false);
 
   // enable_mock_mode (default: false)
   enable_mock_ = parse_bool_param("enable_mock_mode", false);
@@ -354,12 +356,14 @@ void BNO08XHardwareInterface::init_sensor()
     throw std::runtime_error("BNO08x IMU reports failed");
   }
 
-  if (publish_magnetic_field_)
+  if (enable_magnetic_field_)
+    RCLCPP_INFO(logger_, "Enabling magnetic field sensor");
   {
     if (!this->bno08x_->enable_report(SH2_MAGNETIC_FIELD_CALIBRATED,
           1000000 / this->magnetic_field_rate_))
     {  // Hz to us
       RCLCPP_ERROR(logger_, "Failed to enable magnetic field sensor");
+      enable_magnetic_field_ = false;
     }
   }
 
@@ -390,9 +394,13 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
   switch (sensor_value->sensorId)
   {
     case SH2_MAGNETIC_FIELD_CALIBRATED:
-      hw_magnetic_field_x_ = sensor_value->un.magneticField.x;
-      hw_magnetic_field_y_ = sensor_value->un.magneticField.y;
-      hw_magnetic_field_z_ = sensor_value->un.magneticField.z;
+      if (enable_magnetic_field_) {
+        // sensor will still return infrequent magnetic field reports even if the report
+        // was not enabled, so check it was enabled before publishing.
+        hw_magnetic_field_x_ = sensor_value->un.magneticField.x;
+        hw_magnetic_field_y_ = sensor_value->un.magneticField.y;
+        hw_magnetic_field_z_ = sensor_value->un.magneticField.z;
+      }
       break;
     case SH2_ROTATION_VECTOR:
       hw_orientation_x_ = sensor_value->un.rotationVector.i;
@@ -441,9 +449,11 @@ void BNO08XHardwareInterface::close_hardware()
   hw_linear_acceleration_y_ = 0.0;
   hw_linear_acceleration_z_ = 0.0;
 
-  hw_magnetic_field_x_ = 0.0;  // ENHANCEMENT(rbscr) magnetic field currently not used
-  hw_magnetic_field_y_ = 0.0;  // already added in case it's being used
-  hw_magnetic_field_z_ = 0.0;
+  if (enable_magnetic_field_) {
+    hw_magnetic_field_x_ = 0.0;
+    hw_magnetic_field_y_ = 0.0;
+    hw_magnetic_field_z_ = 0.0;
+  }
 }
 
 // ── export_state_interfaces ───────────────────────────────────────────────────
@@ -465,9 +475,16 @@ BNO08XHardwareInterface::export_state_interfaces()
   state_interfaces.emplace_back(sensor_name, "linear_acceleration.y", &hw_linear_acceleration_y_);
   state_interfaces.emplace_back(sensor_name, "linear_acceleration.z", &hw_linear_acceleration_z_);
 
-  // ENHANCEMENT(rbscr)  when magnetic field will be used add x / y / z values here
+  int state_count{10};
+  if (enable_magnetic_field_) {
+    state_interfaces.emplace_back(sensor_name, "magnetic_field.x", &hw_magnetic_field_x_);
+    state_interfaces.emplace_back(sensor_name, "magnetic_field.y", &hw_magnetic_field_y_);
+    state_interfaces.emplace_back(sensor_name, "magnetic_field.z", &hw_magnetic_field_z_);
+    state_count += 3;
+  }
 
-  RCLCPP_INFO(logger_, "Exported 10 state interfaces for sensor '%s'", sensor_name.c_str());
+  RCLCPP_INFO(logger_, "Exported %d state interfaces for sensor '%s'",
+                        state_count, sensor_name.c_str());
   return state_interfaces;
 }
 

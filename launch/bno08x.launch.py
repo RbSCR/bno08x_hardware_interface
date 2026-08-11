@@ -15,6 +15,7 @@ Base usage:
 Example (other) usage:
     <base-usage> i2c_device:=/dev/i2c-bno08-B i2c_addr:=4B
     <base-usage> axis_remap:=North-West-Up
+    <base-usage> enable_magnetic_field:=true
     <base-usage> enable_mock_mode:=true
     <base-usage> publish_tf:=false
     <base-usage> publish_diagnostics:=false
@@ -48,6 +49,11 @@ def generate_launch_description():
             description='BNO08X axis placement configuration: valid combination of North East South West Up Down'
                 'in the format <xxx>-<xxx>-<xxx>'
                 'See datasheet Figure 4-3  page 41 for the valid combinations.'
+        ),
+        DeclareLaunchArgument(
+            'enable_magnetic_field',
+            default_value='false',
+            description='Enable magnetic field in hardware_interface'
         ),
         DeclareLaunchArgument(
             'enable_mock_mode',
@@ -84,6 +90,7 @@ def generate_launch_description():
     i2c_device = LaunchConfiguration('i2c_device')
     i2c_addr = LaunchConfiguration('i2c_addr')
     axis_remap = LaunchConfiguration('axis_remap')
+    enable_magnetic_field = LaunchConfiguration('enable_magnetic_field')
     enable_mock = LaunchConfiguration('enable_mock_mode')
     sensor_mode = LaunchConfiguration('sensor_mode')
     publish_tf = LaunchConfiguration('publish_tf')
@@ -103,6 +110,8 @@ def generate_launch_description():
             'i2c_addr:=', i2c_addr,
             ' ',
             'axis_remap:=', axis_remap,
+            ' ',
+            'enable_magnetic_field:=', enable_magnetic_field,
             ' ',
             'enable_mock_mode:=', enable_mock,
             ' ',
