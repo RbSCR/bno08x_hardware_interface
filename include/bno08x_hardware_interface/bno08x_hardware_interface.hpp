@@ -113,10 +113,10 @@ private:
   bool        enable_mock_{false};
   std::string sensor_mode_{"NDOF"};  // fusion operation mode   // TODO(rbscr) check remove
 
-  bool enable_magnetic_sensor_{false};
-  int magnetic_rate_{100};  // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses param
+  bool enable_magnetometer_{false};
+  int magnetometer_rate_{100};  // TODO(rbscr) set report freq. ; bno08x_driver-ros uses param
 
-  int imu_rate_{100};      // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses parameter
+  int imu_rate_{100};  // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses param
 
   // Consecutive read failures before returning ERROR (threshold = 10)
   int consecutive_read_errors_{0};  // TODO(rbscr) check used / needed in bno08x
@@ -140,7 +140,7 @@ private:
   double hw_linear_acceleration_x_{0.0};
   double hw_linear_acceleration_y_{0.0};
   double hw_linear_acceleration_z_{0.0};
-  // State storage for magnetic_field_sensor - optional -- 3 interfaces
+  // State storage for magnetometer - optional -- 3 interfaces
   double hw_magnetic_field_x_{0.0};
   double hw_magnetic_field_y_{0.0};
   double hw_magnetic_field_z_{0.0};

@@ -4,12 +4,12 @@
   <!-- copied (and adapted) from bno055_hardware_interface (github.com/adityakamath) -->
 
   <!-- Arguments -->
-  <xacro:arg name="i2c_device"           default="/dev/i2c-bno08x"/>
-  <xacro:arg name="i2c_addr"             default="4A"/>    <!-- hex, no 0x prefix: 4A = 0x4A -->
-  <xacro:arg name="axis_remap"           default="East-North-Up"/>  <!-- See BNO08X datasheet Table 4-3  page 41 -->
-  <xacro:arg name="enable_magnetometer"  default="false"/>
-  <xacro:arg name="enable_mock_mode"     default="false"/>
-  <xacro:arg name="sensor_mode"          default="NDOF"/>  <!-- Fusion mode: NDOF, NDOF_FMC_OFF, IMUPLUS (default: NDOF) -->
+  <xacro:arg name="i2c_device"          default="/dev/i2c-bno08x"/>
+  <xacro:arg name="i2c_addr"            default="4A"/>    <!-- hex, no 0x prefix: 4A = 0x4A -->
+  <xacro:arg name="axis_remap"          default="East-North-Up"/>  <!-- See BNO08X datasheet Table 4-3  page 41 -->
+  <xacro:arg name="enable_magnetometer" default="false"/>
+  <xacro:arg name="enable_mock_mode"    default="false"/>
+  <xacro:arg name="sensor_mode"         default="NDOF"/>  <!-- Fusion mode: NDOF, NDOF_FMC_OFF, IMUPLUS (default: NDOF) -->
 
   <!-- Robot links -->
   <link name="base_link"/>
@@ -64,6 +64,11 @@
       <state_interface name="linear_acceleration.x"/>
       <state_interface name="linear_acceleration.y"/>
       <state_interface name="linear_acceleration.z"/>
+
+      <!-- Magnetic field (micro Tesla)  -->
+      <state_interface name="magnetic_field.x"/>
+      <state_interface name="magnetic_field.y"/>
+      <state_interface name="magnetic_field.z"/>
     </sensor>
   </ros2_control>
 
