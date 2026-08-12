@@ -150,8 +150,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  // enable_magnetic_field (default: false)
-  enable_magnetic_field_ = parse_bool_param("enable_magnetic_field", false);
+  // enable_magnetic_sensor (default: false)
+  enable_magnetic_sensor_ = parse_bool_param("enable_magnetic_sensor", false);
 
   // enable_mock_mode (default: false)
   enable_mock_ = parse_bool_param("enable_mock_mode", false);
@@ -356,14 +356,14 @@ void BNO08XHardwareInterface::init_sensor()
     throw std::runtime_error("BNO08x IMU reports failed");
   }
 
-  if (enable_magnetic_field_)
+  if (enable_magnetic_sensor_)
     RCLCPP_INFO(logger_, "Enabling magnetic field sensor");
   {
     if (!this->bno08x_->enable_report(SH2_MAGNETIC_FIELD_CALIBRATED,
-          1000000 / this->magnetic_field_rate_))
+          1000000 / this->magnetic_rate_))
     {  // Hz to us
       RCLCPP_ERROR(logger_, "Failed to enable magnetic field sensor");
-      enable_magnetic_field_ = false;
+      enable_magnetic_sensor_ = false;
     }
   }
 
@@ -394,7 +394,7 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
   switch (sensor_value->sensorId)
   {
     case SH2_MAGNETIC_FIELD_CALIBRATED:
-      if (enable_magnetic_field_) {
+      if (enable_magnetic_sensor_) {
         // sensor will still return infrequent magnetic field reports even if the report
         // was not enabled, so check it was enabled before publishing.
         hw_magnetic_field_x_ = sensor_value->un.magneticField.x;
@@ -449,7 +449,7 @@ void BNO08XHardwareInterface::close_hardware()
   hw_linear_acceleration_y_ = 0.0;
   hw_linear_acceleration_z_ = 0.0;
 
-  if (enable_magnetic_field_) {
+  if (enable_magnetic_sensor_) {
     hw_magnetic_field_x_ = 0.0;
     hw_magnetic_field_y_ = 0.0;
     hw_magnetic_field_z_ = 0.0;
@@ -476,7 +476,7 @@ BNO08XHardwareInterface::export_state_interfaces()
   state_interfaces.emplace_back(sensor_name, "linear_acceleration.z", &hw_linear_acceleration_z_);
 
   int state_count{10};
-  if (enable_magnetic_field_) {
+  if (enable_magnetic_sensor_) {
     state_interfaces.emplace_back(sensor_name, "magnetic_field.x", &hw_magnetic_field_x_);
     state_interfaces.emplace_back(sensor_name, "magnetic_field.y", &hw_magnetic_field_y_);
     state_interfaces.emplace_back(sensor_name, "magnetic_field.z", &hw_magnetic_field_z_);

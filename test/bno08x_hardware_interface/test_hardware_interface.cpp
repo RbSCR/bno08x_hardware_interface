@@ -77,7 +77,7 @@ TEST(InitTest, ValidParams)
   // device /dev/i2c-bn08x, addr 0x4B
 
   auto magneticfield_enabled = make_valid_imu_info();
-  magneticfield_enabled.hardware_parameters["enable_magnetic_field"] = "true";
+  magneticfield_enabled.hardware_parameters["enable_magnetic_sensor"] = "true";
   EXPECT_EQ(init(magneticfield_enabled), CallbackReturn::SUCCESS);
 
   auto mock_enabled = make_valid_imu_info();
