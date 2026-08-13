@@ -5,6 +5,8 @@ Launches the full ros2_control stack (robot_state_publisher, ros2_control_node,
 imu_sensor_broadcaster) against the physical BNO08X on /dev/i2c-1 at 0x28 when
 present, or in mock mode (enable_mock_mode:=true) when the hardware is not detected,
 so the suite always runs in CI regardless of sensor availability.
+
+Note: magnetometer_broadcaster is tested in 'test_bno08x_magnetometer.launch.py'
 """
 
 # TODO(rbscr) change 'bus' tests, use device

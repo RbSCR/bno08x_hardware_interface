@@ -2,7 +2,7 @@
 Launch integration test for bno08x_hardware_interface.
 
 Launches the full ros2_control stack (robot_state_publisher, ros2_control_node,
-imu_sensor_broadcaster, magnetometer_broadcaster) against the physical BNO08X
+imu_sensor_broadcaster and magnetometer_broadcaster) against the physical BNO08X
 on /dev/i2c-1 at 0x28 when present, or in mock mode (enable_mock_mode:=true) when
 the hardware is not detected, so the suite always runs in CI regardless of sensor availability.
 """
@@ -188,6 +188,8 @@ class TestBNO08XLaunch(unittest.TestCase):
         )
 
     # ── IMU topic ─────────────────────────────────────────────────────────
+    # Note: The tests for the IMU topic could be removed.
+    #       These are already done in the other launch-test 'test_bno08x.launch.py'
 
     def test_imu_topic_published(self):
         """Verify /imu_sensor_broadcaster/imu publishes at least one message."""
@@ -274,7 +276,63 @@ class TestBNO08XLaunch(unittest.TestCase):
         )
 
     # ── Magnetic messages  ───────────────────────────────────────
-    # TODO(rbscr) aad test for magnetic messages
+
+    def test_magnetic_field_topic_published(self):
+        """Verify /magnetometer_broadcaster/magnetic_field publishes at least one message."""
+        from sensor_msgs.msg import MagneticField
+        msgs = _wait_for_topic(
+            self.node, '/magnetometer_broadcaster/magnetic_field', MagneticField, timeout_sec=45.0)
+        self.assertTrue(msgs, '/magnetometer_broadcaster/magnetic_field not received within 45 s')
+
+    def test_magnetometer_imu_frame_id(self):
+        """Verify magnetic_field messages carry frame_id = 'imu_frame'."""
+        from sensor_msgs.msg import MagneticField
+        msgs = _wait_for_topic(
+            self.node, '/magnetometer_broadcaster/magnetic_field', MagneticField, timeout_sec=45.0)
+        self.assertTrue(msgs, '/magnetometer_broadcaster/magnetic_field not received')
+        self.assertEqual(
+            msgs[0].header.frame_id, 'imu_frame',
+            f'Expected frame_id "imu_frame", got "{msgs[0].header.frame_id}"',
+        )
+
+    def test_magnetic_field_is_finite(self):
+        """Verify all magnetic field components are finite numbers."""
+        from sensor_msgs.msg import MagneticField
+        msgs = _wait_for_topic(
+            self.node, '/magnetometer_broadcaster/magnetic_field', MagneticField, timeout_sec=45.0)
+        self.assertTrue(msgs, '/magnetometer_broadcaster/magnetic_field not received')
+
+        mf = msgs[0].magnetic_field
+        for field, val in (('x', mf.x), ('y', mf.y), ('z', mf.z)):
+            self.assertTrue(
+                math.isfinite(val),
+                f'magnetic_field.{field} = {val} is not finite',
+            )
+
+    def test_magnetic_field_publishes_continuously(self):
+        """Verify the magnetic_field topic publishes multiple messages over 2 seconds."""
+        from sensor_msgs.msg import MagneticField
+
+        # First wait for the topic to be alive, then collect for 2 s
+        msgs = _wait_for_topic(
+            self.node, '/magnetometer_broadcaster/magnetic_field', MagneticField, timeout_sec=45.0)
+        self.assertTrue(msgs, '/magnetometer_broadcaster/magnetic_field not received')
+
+        # Collect for ~2 more seconds
+        received = []
+        sub = self.node.create_subscription(
+            MagneticField, '/magnetometer_broadcaster/magnetic_field', received.append, 50)
+        deadline = time.time() + 2.0
+        while time.time() < deadline:
+            rclpy.spin_once(self.node, timeout_sec=0.05)
+        self.node.destroy_subscription(sub)
+
+        self.assertGreater(
+            len(received), 1,
+            f'magnetic_field topic published only {len(received)} message(s) in 2 s'
+            ' — expected continuous stream',
+        )
+
 
     # ── Diagnostics ──────────────────────────────────────────────
     # TODO(rbscr)  diagnostics temporarily disabled

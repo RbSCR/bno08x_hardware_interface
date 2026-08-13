@@ -8,7 +8,7 @@ controller_manager:
 
     # Magnetometer Broadcaster - Publishes sensor_msgs/MagneticField to /magneticfield_sensor_broadcaster/imu/mag
     # TODO(rbscr) check topic
-    magnetometer_sensor_broadcaster:
+    magnetometer_broadcaster:
       type: magnetometer_broadcaster/MagnetometerBroadcaster
 
 # IMU Sensor Broadcaster configuration
@@ -50,7 +50,7 @@ imu_sensor_broadcaster:
     #   pitch: 0.0  # radians
     #   yaw:   0.0  # radians
 
-magnetometer_sensor_broadcaster:
+magnetometer_broadcaster:
   ros__parameters:
     sensor_name: bno08x  # Must match the <sensor name="..."> in the URDF ros2_control block
     frame_id: imu_frame  # Sensor’s frame_id in which values are published

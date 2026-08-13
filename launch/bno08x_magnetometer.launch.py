@@ -165,7 +165,6 @@ def generate_launch_description():
         arguments=['imu_sensor_broadcaster', '--controller-manager', '/controller_manager'],
     )
 
-    # TODO(rbscr) Also check enable_magnetometer ?
     # Optional: Magnetometer broadcaster spawner
     magnetometer_broadcaster_spawner = Node(
         package='controller_manager',
