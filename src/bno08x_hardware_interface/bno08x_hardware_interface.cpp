@@ -150,6 +150,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
+  // enable_magnetometer (default: false)
+  enable_magnetometer_ = parse_bool_param("enable_magnetometer", false);
 
   // enable_mock_mode (default: false)
   enable_mock_ = parse_bool_param("enable_mock_mode", false);
@@ -168,27 +170,36 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  // Validate that each declared state interface name matches one of the 10 expected.
-  const std::vector<std::string> kExpected = {
+  // Validate that each declared state interface name matches one of the 10 or 13 expected.
+  std::vector<std::string> kExpected = {
     "orientation.x", "orientation.y", "orientation.z", "orientation.w",
     "angular_velocity.x", "angular_velocity.y", "angular_velocity.z",
     "linear_acceleration.x", "linear_acceleration.y", "linear_acceleration.z",
   };
+  std::string expected_txt = "orientation.{x,y,z,w}, angular_velocity.{x,y,z}";
+  expected_txt.append(", linear_acceleration.{x,y,z}");
+
+  if(enable_magnetometer_) {
+    std::vector<std::string> magnetic_states = {"magnetic_field.x", "magnetic_field.y",
+      "magnetic_field.z"};
+    kExpected.insert(kExpected.end(), magnetic_states.begin(), magnetic_states.end());
+    expected_txt.append(", magnetic_field.{x,y,z}");
+  }
+
   for (const auto & si : info_.sensors[0].state_interfaces) {
     if (std::find(kExpected.begin(), kExpected.end(), si.name) == kExpected.end()) {
       RCLCPP_ERROR(
-        logger_, "Unexpected state interface '%s'. Expected one of: "
-        "orientation.{x,y,z,w}, angular_velocity.{x,y,z}, linear_acceleration.{x,y,z}",
-        si.name.c_str());
+        logger_, "Unexpected state interface '%s'. Expected one of: '%s'",
+        si.name.c_str(), expected_txt.c_str());
       return hardware_interface::CallbackReturn::ERROR;
     }
   }
 
   RCLCPP_INFO(
     logger_,
-    "Initialized: i2c_device=%s i2c_addr=0x%02X axis_remap=%s sensor_mode=%s mock=%s",
+    "Initialized: i2c_device=%s i2c_addr=0x%02X axis_remap=%s sensor_mode=%s magneto=%s mock=%s",
     i2c_device_.c_str(), i2c_addr_, axis_remap_.c_str(), sensor_mode_.c_str(),
-    enable_mock_ ? "true" : "false");
+    enable_magnetometer_ ? "true" : "false", enable_mock_ ? "true" : "false");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -354,12 +365,14 @@ void BNO08XHardwareInterface::init_sensor()
     throw std::runtime_error("BNO08x IMU reports failed");
   }
 
-  if (publish_magnetic_field_)
+  if (enable_magnetometer_)
+    RCLCPP_INFO(logger_, "Enabling magnetometer");
   {
     if (!this->bno08x_->enable_report(SH2_MAGNETIC_FIELD_CALIBRATED,
-          1000000 / this->magnetic_field_rate_))
+          1000000 / this->magnetometer_rate_))
     {  // Hz to us
-      RCLCPP_ERROR(logger_, "Failed to enable magnetic field sensor");
+      RCLCPP_ERROR(logger_, "Failed to enable magnetometer");
+      enable_magnetometer_ = false;
     }
   }
 
@@ -390,9 +403,13 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
   switch (sensor_value->sensorId)
   {
     case SH2_MAGNETIC_FIELD_CALIBRATED:
-      hw_magnetic_field_x_ = sensor_value->un.magneticField.x;
-      hw_magnetic_field_y_ = sensor_value->un.magneticField.y;
-      hw_magnetic_field_z_ = sensor_value->un.magneticField.z;
+      if (enable_magnetometer_) {
+        // sensor will still return infrequent magnetic field reports even if the report
+        // was not enabled, so check it was enabled before publishing.
+        hw_magnetic_field_x_ = sensor_value->un.magneticField.x;
+        hw_magnetic_field_y_ = sensor_value->un.magneticField.y;
+        hw_magnetic_field_z_ = sensor_value->un.magneticField.z;
+      }
       break;
     case SH2_ROTATION_VECTOR:
       hw_orientation_x_ = sensor_value->un.rotationVector.i;
@@ -441,9 +458,11 @@ void BNO08XHardwareInterface::close_hardware()
   hw_linear_acceleration_y_ = 0.0;
   hw_linear_acceleration_z_ = 0.0;
 
-  hw_magnetic_field_x_ = 0.0;  // ENHANCEMENT(rbscr) magnetic field currently not used
-  hw_magnetic_field_y_ = 0.0;  // already added in case it's being used
-  hw_magnetic_field_z_ = 0.0;
+  if (enable_magnetometer_) {
+    hw_magnetic_field_x_ = 0.0;
+    hw_magnetic_field_y_ = 0.0;
+    hw_magnetic_field_z_ = 0.0;
+  }
 }
 
 // ── export_state_interfaces ───────────────────────────────────────────────────
@@ -465,9 +484,16 @@ BNO08XHardwareInterface::export_state_interfaces()
   state_interfaces.emplace_back(sensor_name, "linear_acceleration.y", &hw_linear_acceleration_y_);
   state_interfaces.emplace_back(sensor_name, "linear_acceleration.z", &hw_linear_acceleration_z_);
 
-  // ENHANCEMENT(rbscr)  when magnetic field will be used add x / y / z values here
+  int state_count{10};
+  if (enable_magnetometer_) {
+    state_interfaces.emplace_back(sensor_name, "magnetic_field.x", &hw_magnetic_field_x_);
+    state_interfaces.emplace_back(sensor_name, "magnetic_field.y", &hw_magnetic_field_y_);
+    state_interfaces.emplace_back(sensor_name, "magnetic_field.z", &hw_magnetic_field_z_);
+    state_count += 3;
+  }
 
-  RCLCPP_INFO(logger_, "Exported 10 state interfaces for sensor '%s'", sensor_name.c_str());
+  RCLCPP_INFO(logger_, "Exported %d state interfaces for sensor '%s'",
+                        state_count, sensor_name.c_str());
   return state_interfaces;
 }
 

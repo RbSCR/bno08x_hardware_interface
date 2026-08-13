@@ -173,10 +173,14 @@ if(BUILD_TESTING)
     ${BNO08X_DRIVER_DIR}
   )
 
-  # Python launch test — full stack against real BNO08X hardware or mock mode.
+  # Python launch tests — full stack against real BNO08X hardware or mock mode.
   # Uses enable_mock_mode:=true when the sensor is absent so CI always runs all tests.
+
+  # Tests without magnetometer broadcaster; IMU broadcaster is always spawned
   add_launch_test(test/bno08x_hardware_interface/test_bno08x.launch.py)
 
+  # Tests with IMU broadcaster and magnetometer broadcaster
+  add_launch_test(test/bno08x_hardware_interface/test_bno08x_magnetometer.launch.py)
 
 endif()
 

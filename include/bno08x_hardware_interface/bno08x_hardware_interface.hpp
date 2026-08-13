@@ -109,15 +109,14 @@ private:
   // Parameters
   std::string i2c_device_;
   uint8_t     i2c_addr_{0x4A};  // Default 0x4A, alternative 0x4B  Par 1.2.2.1 Datasheet BNO08X
-  std::string axis_remap_{"P1"};    // TODO(rbscr) bno08x uses different remap-names
-                                    // TODO(rbscr) check if remap possible on bno08x-driver
+  std::string axis_remap_{"East-North-Up"};
   bool        enable_mock_{false};
   std::string sensor_mode_{"NDOF"};  // fusion operation mode   // TODO(rbscr) check remove
 
-  bool publish_magnetic_field_{true};  // FIXME temporarely set to true, get from param?
-  int magnetic_field_rate_;  // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses param
+  bool enable_magnetometer_{false};
+  int magnetometer_rate_{100};  // TODO(rbscr) set report freq. ; bno08x_driver-ros uses param
 
-  int imu_rate_;      // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses parameter
+  int imu_rate_{100};  // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses param
 
   // Consecutive read failures before returning ERROR (threshold = 10)
   int consecutive_read_errors_{0};  // TODO(rbscr) check used / needed in bno08x
@@ -130,8 +129,7 @@ private:
   // Watchdog
   Watchdog* watchdog_;
 
-
-  // State storage for imu_sensor -- 10 interfaces
+  // State storage for imu_sensor - always -- 10 interfaces
   double hw_orientation_x_{0.0};
   double hw_orientation_y_{0.0};
   double hw_orientation_z_{0.0};
@@ -142,10 +140,7 @@ private:
   double hw_linear_acceleration_x_{0.0};
   double hw_linear_acceleration_y_{0.0};
   double hw_linear_acceleration_z_{0.0};
-  //
-  // State storage for magnetic_field_sensor -- 3 interfaces
-  // Not yet used
-  // TODO(rbscr) Determine if magnetic field is relevant/useful (it's not needed)
+  // State storage for magnetometer - optional -- 3 interfaces
   double hw_magnetic_field_x_{0.0};
   double hw_magnetic_field_y_{0.0};
   double hw_magnetic_field_z_{0.0};

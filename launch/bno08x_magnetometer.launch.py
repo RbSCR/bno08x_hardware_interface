@@ -6,6 +6,7 @@ Starts the complete ros2_control stack for the BNO08x IMU, including:
 - Robot state publisher for TF transforms
 - Controller manager with the BNO08x SensorInterface hardware plugin
 - IMU sensor broadcaster publishing sensor_msgs/Imu to /imu_sensor_broadcaster/imu
+- Optional: Magnetometer broadcaster publishing sensor_msgs/MagneticField
 
 Base usage:
     ros2 launch bno08x_hardware_interface bno08x.launch.py
@@ -56,7 +57,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'enable_magnetometer',
-            default_value='false',
+            default_value='true',
             description='Enable magnetometer in hardware_interface'
         ),
         DeclareLaunchArgument(
@@ -81,6 +82,15 @@ def generate_launch_description():
             ),
         ),
         DeclareLaunchArgument(
+            'broadcast_magnetometer',
+            default_value='true',
+            description=(
+                'Broadcast magnetic orientation'
+                'Note: to be usefull also set enable_magnetometer to true'
+            ),
+        ),
+
+        DeclareLaunchArgument(
             # TODO(rbscr) diagnostics temporarily default disabled
             'publish_diagnostics',
             default_value='false',
@@ -98,6 +108,7 @@ def generate_launch_description():
     enable_mock = LaunchConfiguration('enable_mock_mode')
     sensor_mode = LaunchConfiguration('sensor_mode')
     publish_tf = LaunchConfiguration('publish_tf')
+    broadcast_magnetometer = LaunchConfiguration('broadcast_magnetometer')
     publish_diagnostics = LaunchConfiguration('publish_diagnostics')
 
     # Get URDF via xacro
@@ -106,7 +117,7 @@ def generate_launch_description():
             PathJoinSubstitution([FindExecutable(name='xacro')]),
             ' ',
             PathJoinSubstitution(
-                [FindPackageShare('bno08x_hardware_interface'), 'config', 'bno08x.urdf.xacro']
+                [FindPackageShare('bno08x_hardware_interface'), 'config', 'bno08x_magnetometer.urdf.xacro']
             ),
             ' ',
             'i2c_device:=', i2c_device,
@@ -136,7 +147,7 @@ def generate_launch_description():
 
     # Controller configuration
     controller_config = PathJoinSubstitution(
-        [FindPackageShare('bno08x_hardware_interface'), 'config', 'imu_broadcaster.yaml']
+        [FindPackageShare('bno08x_hardware_interface'), 'config', 'imu_magnetometer_broadcaster.yaml']
     )
 
     # Controller manager (ros2_control_node)
@@ -152,6 +163,14 @@ def generate_launch_description():
         package='controller_manager',
         executable='spawner',
         arguments=['imu_sensor_broadcaster', '--controller-manager', '/controller_manager'],
+    )
+
+    # Optional: Magnetometer broadcaster spawner
+    magnetometer_broadcaster_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['magnetometer_broadcaster', '--controller-manager', '/controller_manager'],
+        condition=IfCondition(broadcast_magnetometer)
     )
 
     # Optional: relay IMU orientation to TF for RViz 3D visualization.
@@ -186,6 +205,7 @@ def generate_launch_description():
             robot_state_publisher_node,
             controller_manager_node,
             imu_broadcaster_spawner,
+            magnetometer_broadcaster_spawner,
             imu_tf_broadcaster_node,
             bno08x_diagnostics_node,
         ]

@@ -76,9 +76,17 @@ TEST(InitTest, ValidParams)
   EXPECT_EQ(init(make_valid_imu_info("/dev/i2c-bn08x", "4B")), CallbackReturn::SUCCESS);
   // device /dev/i2c-bn08x, addr 0x4B
 
-  auto mock = make_valid_imu_info();
-  mock.hardware_parameters["enable_mock_mode"] = "true";
-  EXPECT_EQ(init(mock), CallbackReturn::SUCCESS);
+  auto magnetometer_enabled = make_valid_imu_info();
+  magnetometer_enabled.hardware_parameters["enable_magnetometer"] = "true";
+  EXPECT_EQ(init(magnetometer_enabled), CallbackReturn::SUCCESS);
+
+  auto magnetometer_disabled = make_valid_imu_info();
+  magnetometer_disabled.hardware_parameters["enable_magnetometer"] = "false";
+  EXPECT_EQ(init(magnetometer_disabled), CallbackReturn::SUCCESS);
+
+  auto mock_enabled = make_valid_imu_info();
+  mock_enabled.hardware_parameters["enable_mock_mode"] = "true";
+  EXPECT_EQ(init(mock_enabled), CallbackReturn::SUCCESS);
 
   auto calib = make_valid_imu_info();
   calib.hardware_parameters["calib_file"] = "~/.ros/bno08x_calib.yaml";
