@@ -20,18 +20,12 @@
 
 #include "bno08x_hardware_interface/bno08x_hardware_interface.hpp"
 
-// TODO(rbscr) check next includes are needed
-#include <algorithm>
-#include <cmath>
 #include <fstream>
 #include <map>
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "pluginlib/class_list_macros.hpp"
-
 
 namespace
 {
@@ -75,18 +69,6 @@ const std::map<std::string, sh2_Quaternion_t> kAxisRemap = {
   {"Down-East-South" , {QVal::NegHalf, QVal::NegHalf, QVal::NegHalf, QVal::Half}},
   {"East-Up-South", {QVal::Zero, QVal::NegHalfSqrtTwo, QVal::Zero, QVal::HalfSqrtTwo}},
 };
-
-// TODO(rbscr) check operation mode of BNO08X
-// Fusion mode lookup: parameter string -> BNO055 operation mode constant.
-// All three modes produce identical outputs: quaternion + angular_velocity + linear_acceleration.
-//   NDOF         - 9-DOF, absolute orientation anchored to magnetic North
-//   NDOF_FMC_OFF - same as NDOF but fast magnetometer calibration disabled (for noisy environments)
-//   IMUPLUS      - 6-DOF, relative orientation, gyro + accel only (no magnetometer)
-// |const std::map<std::string, uint8_t> kOperationMode = {
-// |  {"NDOF",         BNO055_OPERATION_MODE_NDOF},
-// |  {"NDOF_FMC_OFF", BNO055_OPERATION_MODE_NDOF_FMC_OFF},
-// |  {"IMUPLUS",      BNO055_OPERATION_MODE_IMUPLUS},
-// |};
 
 }  // namespace
 
@@ -156,15 +138,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
   // enable_mock_mode (default: false)
   enable_mock_ = parse_bool_param("enable_mock_mode", false);
 
-
-  // TODO(rbscr)  check sensormode of BNO08X
-  // sensor_mode (default: "NDOF")
-  if (const auto it = info_.hardware_parameters.find("sensor_mode");
-    it != info_.hardware_parameters.end())
-  {
-    sensor_mode_ = it->second;
-  }
-
+  // Validate number of sensors
   if (info_.sensors.size() != 1) {
     RCLCPP_ERROR(logger_, "Expected exactly 1 <sensor> element, got %zu", info_.sensors.size());
     return hardware_interface::CallbackReturn::ERROR;
@@ -176,8 +150,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     "angular_velocity.x", "angular_velocity.y", "angular_velocity.z",
     "linear_acceleration.x", "linear_acceleration.y", "linear_acceleration.z",
   };
-  std::string expected_txt = "orientation.{x,y,z,w}, angular_velocity.{x,y,z}";
-  expected_txt.append(", linear_acceleration.{x,y,z}");
+  std::string expected_txt = "orientation.{x,y,z,w}, angular_velocity.{x,y,z}"
+    ", linear_acceleration.{x,y,z}";
 
   if(enable_magnetometer_) {
     std::vector<std::string> magnetic_states = {"magnetic_field.x", "magnetic_field.y",
@@ -197,8 +171,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   RCLCPP_INFO(
     logger_,
-    "Initialized: i2c_device=%s i2c_addr=0x%02X axis_remap=%s sensor_mode=%s magneto=%s mock=%s",
-    i2c_device_.c_str(), i2c_addr_, axis_remap_.c_str(), sensor_mode_.c_str(),
+    "Initialized: i2c_device=%s i2c_addr=0x%02X axis_remap=%s magneto=%s mock=%s",
+    i2c_device_.c_str(), i2c_addr_, axis_remap_.c_str(),
     enable_magnetometer_ ? "true" : "false", enable_mock_ ? "true" : "false");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -492,6 +466,7 @@ BNO08XHardwareInterface::export_state_interfaces()
     state_count += 3;
   }
 
+  // TODO(rbscr) after testing physical device: remove next line or change to RCLCPP_DEBUG
   RCLCPP_INFO(logger_, "Exported %d state interfaces for sensor '%s'",
                         state_count, sensor_name.c_str());
   return state_interfaces;
@@ -502,12 +477,8 @@ BNO08XHardwareInterface::export_state_interfaces()
 hardware_interface::return_type BNO08XHardwareInterface::read(
     const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  if (enable_mock_) {
-    return hardware_interface::return_type::OK;
-  }
-
   // Kind of "dummy" method, needed for ROS2 control hardware-interface.
-  // In bno055_hardware_interface read() is used to 'tranfer' the sensorvalues
+  // In the Control hardware_interface framework read() is used to 'tranfer' the sensorvalues
   // to the state_interface.
   // In this hardware_interface the sensor_callback() 'transfers' the sensorvalues
   // to the state_interface.

@@ -9,7 +9,6 @@
   <xacro:arg name="axis_remap"           default="East-North-Up"/>  <!-- See BNO08X datasheet Table 4-3  page 41 -->
   <xacro:arg name="enable_magnetometer"  default="false"/>
   <xacro:arg name="enable_mock_mode"     default="false"/>
-  <xacro:arg name="sensor_mode"          default="NDOF"/>  <!-- Fusion mode: NDOF, NDOF_FMC_OFF, IMUPLUS (default: NDOF) -->
 
   <!-- Robot links -->
   <link name="base_link"/>
@@ -43,7 +42,6 @@
 
       <!-- Sensor Configuration -->
       <param name="axis_remap">$(arg axis_remap)</param>     <!-- Axis placement config -->
-      <param name="sensor_mode">$(arg sensor_mode)</param>   <!-- Fusion mode: NDOF, NDOF_FMC_OFF, IMUPLUS (default: NDOF) -->
       <param name="enable_magnetometer">$(arg enable_magnetometer)</param>
       <param name="enable_mock_mode">$(arg enable_mock_mode)</param>   <!-- Simulation mode, no hardware required (default: false) -->
     </hardware>

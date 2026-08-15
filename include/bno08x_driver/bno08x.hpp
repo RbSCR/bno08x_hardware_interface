@@ -48,10 +48,9 @@ public:
   bool enable_report(sh2_SensorId_t sensor, uint32_t interval_us = 10000);
   void poll(void);
 
-  // ENHANCEMENT Set reorientation (i.e. axis remap) of the sensor
-
-  // Contributed by githhub user LazaroFilm (Victor Lazaro) Nov 2023.
-  // https://github.com/sparkfun/SparkFun_BNO08x_Arduino_Library/pull/15
+  // Set reorientation (i.e. axis remap) of the sensor
+  //   Contributed by githhub user LazaroFilm (Victor Lazaro) Nov 2023.
+  //   https://github.com/sparkfun/SparkFun_BNO08x_Arduino_Library/pull/15
   bool setReorientation(sh2_Quaternion_t *pOrientation);
 
   sh2_ProductIds_t prodIds;  ///< The product IDs returned by the sensor

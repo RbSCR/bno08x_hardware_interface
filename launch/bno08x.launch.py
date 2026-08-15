@@ -65,15 +65,6 @@ def generate_launch_description():
             description='Use mock/simulation mode (no hardware required)'
         ),
         DeclareLaunchArgument(
-            'sensor_mode',
-            default_value='NDOF',
-            description=(
-                'BNO08X fusion mode: NDOF (absolute, 9-DOF), '
-                'NDOF_FMC_OFF (absolute, fast mag-cal disabled), '
-                'IMUPLUS (relative, 6-DOF, no magnetometer)'
-            )
-        ),
-        DeclareLaunchArgument(
             'publish_tf',
             default_value='true',
             description=(
@@ -96,7 +87,6 @@ def generate_launch_description():
     axis_remap = LaunchConfiguration('axis_remap')
     enable_magnetometer = LaunchConfiguration('enable_magnetometer')
     enable_mock = LaunchConfiguration('enable_mock_mode')
-    sensor_mode = LaunchConfiguration('sensor_mode')
     publish_tf = LaunchConfiguration('publish_tf')
     publish_diagnostics = LaunchConfiguration('publish_diagnostics')
 
@@ -118,8 +108,6 @@ def generate_launch_description():
             'enable_magnetometer:=', enable_magnetometer,
             ' ',
             'enable_mock_mode:=', enable_mock,
-            ' ',
-            'sensor_mode:=', sensor_mode,
         ]
     )
     robot_description = {
@@ -175,7 +163,6 @@ def generate_launch_description():
         parameters=[{
             'i2c_device':  i2c_device,
             'i2c_addr':    ParameterValue(i2c_addr, value_type=str),
-            'sensor_mode': sensor_mode,
             'enable_mock_mode': ParameterValue(enable_mock, value_type=str),
         }],
         condition=IfCondition(publish_diagnostics),

@@ -6,8 +6,7 @@ controller_manager:
     imu_sensor_broadcaster:
       type: imu_sensor_broadcaster/IMUSensorBroadcaster
 
-    # Magnetometer Broadcaster - Publishes sensor_msgs/MagneticField to /magneticfield_sensor_broadcaster/imu/mag
-    # TODO(rbscr) check topic
+    # Magnetometer Broadcaster - Publishes sensor_msgs/MagneticField to magnetometer_broadcaster/magnetic_field
     magnetometer_broadcaster:
       type: magnetometer_broadcaster/MagnetometerBroadcaster
 

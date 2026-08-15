@@ -103,7 +103,7 @@ private:
   // Accepts only "true" — mirrors the xacro $(arg ...) string convention.
   bool parse_bool_param(const std::string & key, bool default_value) const;
 
-
+  //
   rclcpp::Logger logger_;
 
   // Parameters
@@ -111,12 +111,11 @@ private:
   uint8_t     i2c_addr_{0x4A};  // Default 0x4A, alternative 0x4B  Par 1.2.2.1 Datasheet BNO08X
   std::string axis_remap_{"East-North-Up"};
   bool        enable_mock_{false};
-  std::string sensor_mode_{"NDOF"};  // fusion operation mode   // TODO(rbscr) check remove
 
   bool enable_magnetometer_{false};
   int magnetometer_rate_{100};  // TODO(rbscr) set report freq. ; bno08x_driver-ros uses param
-
-  int imu_rate_{100};  // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses param
+  int imu_rate_{100};           // TODO(rbscr) set report freq. ; bno08x_driver-ros uses param
+                                // Possible enhancement
 
   // Consecutive read failures before returning ERROR (threshold = 10)
   int consecutive_read_errors_{0};  // TODO(rbscr) check used / needed in bno08x
