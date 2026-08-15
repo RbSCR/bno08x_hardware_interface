@@ -245,9 +245,9 @@ bool BNO08x::enable_report(sh2_SensorId_t sensorId,
   return true;
 }
 
-// ENHANCEMENT Set reorientation (i.e. axis remap) of the sensor
-// Contributed by githhub user LazaroFilm (Victor Lazaro) Nov 2023.
-// https://github.com/sparkfun/SparkFun_BNO08x_Arduino_Library/pull/15
+// Set reorientation (i.e. axis remap) of the sensor
+//   Contributed by githhub user LazaroFilm (Victor Lazaro) Nov 2023.
+//   https://github.com/sparkfun/SparkFun_BNO08x_Arduino_Library/pull/15
 // This function takes a quaternion and applies it to the rotation vector output as an offset.
 // This can be used in conjunction to the tare functions to offset the output manually.
 // To reset, simply send a zeroed out quaternion to the function.

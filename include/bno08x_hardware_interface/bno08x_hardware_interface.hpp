@@ -114,8 +114,8 @@ private:
 
   bool enable_magnetometer_{false};
   int magnetometer_rate_{100};  // TODO(rbscr) set report freq. ; bno08x_driver-ros uses param
-
-  int imu_rate_{100};  // TODO(rbscr) used to set report freq. ; bno08x_driver-ros uses param
+  int imu_rate_{100};           // TODO(rbscr) set report freq. ; bno08x_driver-ros uses param
+                                // Possible enhancement
 
   // Consecutive read failures before returning ERROR (threshold = 10)
   int consecutive_read_errors_{0};  // TODO(rbscr) check used / needed in bno08x

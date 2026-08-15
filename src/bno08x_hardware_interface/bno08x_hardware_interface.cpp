@@ -20,18 +20,12 @@
 
 #include "bno08x_hardware_interface/bno08x_hardware_interface.hpp"
 
-// TODO(rbscr) check next includes are needed
-#include <algorithm>
-#include <cmath>
 #include <fstream>
 #include <map>
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "pluginlib/class_list_macros.hpp"
-
 
 namespace
 {
@@ -472,6 +466,7 @@ BNO08XHardwareInterface::export_state_interfaces()
     state_count += 3;
   }
 
+  // TODO(rbscr) after testing physical device: remove next line or change to RCLCPP_DEBUG
   RCLCPP_INFO(logger_, "Exported %d state interfaces for sensor '%s'",
                         state_count, sensor_name.c_str());
   return state_interfaces;
@@ -482,12 +477,8 @@ BNO08XHardwareInterface::export_state_interfaces()
 hardware_interface::return_type BNO08XHardwareInterface::read(
     const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  if (enable_mock_) {
-    return hardware_interface::return_type::OK;
-  }
-
   // Kind of "dummy" method, needed for ROS2 control hardware-interface.
-  // In bno055_hardware_interface read() is used to 'tranfer' the sensorvalues
+  // In the Control hardware_interface framework read() is used to 'tranfer' the sensorvalues
   // to the state_interface.
   // In this hardware_interface the sensor_callback() 'transfers' the sensorvalues
   // to the state_interface.
