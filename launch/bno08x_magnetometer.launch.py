@@ -6,21 +6,24 @@ Starts the complete ros2_control stack for the BNO08x IMU, including:
 - Robot state publisher for TF transforms
 - Controller manager with the BNO08x SensorInterface hardware plugin
 - IMU sensor broadcaster publishing sensor_msgs/Imu to /imu_sensor_broadcaster/imu
-- Optional: Magnetometer broadcaster publishing sensor_msgs/MagneticField
+- Magnetometer broadcaster publishing sensor_msgs/MagneticField
+
+This is a convenience launch file. The same functionality can be achieved
+by using the 'bno08x.launch.py' file with the parameters 'enable_magnetometer:=true'
+and 'broadcast_magnetometer:=true'.
 
 Base usage:
-    ros2 launch bno08x_hardware_interface bno08x.launch.py
+    ros2 launch bno08x_hardware_interface bno08x_magnetometer.launch.py
 
-    See the declared_arguments below for the default values
+    See the declared_arguments below for the default values.
 
 Example (other) usage:
     <base-usage> i2c_device:=/dev/i2c-bno08-B i2c_addr:=4B
     <base-usage> axis_remap:=North-West-Up
-    <base-usage> enable_magnetometer:=true
     <base-usage> enable_mock_mode:=true
     <base-usage> publish_tf:=false
-    <base-usage> broadcast_magnetometer:=true
-    <base-usage> publish_diagnostics:=false
+    <base-usage> broadcast_magnetometer:=false
+    <base-usage> publish_diagnostics:=true
 """
 
 from launch import LaunchDescription
