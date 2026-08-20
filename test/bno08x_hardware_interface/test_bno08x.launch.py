@@ -71,6 +71,8 @@ def generate_test_description():
         'i2c_device':           '/dev/i2c-1',
         'i2c_addr':             '4A',
         'axis_remap':           'East-North-Up',
+        'imu_rate':             '100',
+        'enable_magnetometer':  'false',
         'publish_diagnostics':  'false',
     }
     # TODO(rbscr)  diagnostics temporarily disabled, will be future enhancement

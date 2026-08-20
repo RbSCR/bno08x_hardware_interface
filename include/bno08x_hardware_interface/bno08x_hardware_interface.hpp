@@ -110,12 +110,12 @@ private:
   std::string i2c_device_;
   uint8_t     i2c_addr_{0x4A};  // Default 0x4A, alternative 0x4B  Par 1.2.2.1 Datasheet BNO08X
   std::string axis_remap_{"East-North-Up"};
-  bool        enable_mock_{false};
 
   bool enable_magnetometer_{false};
-  int magnetometer_rate_{100};  // TODO(rbscr) set report freq. ; bno08x_driver-ros uses param
-  int imu_rate_{100};           // TODO(rbscr) set report freq. ; bno08x_driver-ros uses param
-                                // Possible enhancement
+  int magnetometer_rate_{100};  // report frequency in Hz.
+  int imu_rate_{100};           // report frequency in Hz.
+
+  bool enable_mock_{false};
 
   // Consecutive read failures before returning ERROR (threshold = 10)
   int consecutive_read_errors_{0};  // TODO(rbscr) check used / needed in bno08x

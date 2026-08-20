@@ -15,6 +15,7 @@ Base usage:
 Example (other) usage:
     <base-usage> i2c_device:=/dev/i2c-bno08-B i2c_addr:=4B
     <base-usage> axis_remap:=North-West-Up
+    <base-usage> imu_rate:=150
     <base-usage> enable_magnetometer:=true
     <base-usage> enable_mock_mode:=true
     <base-usage> publish_tf:=false
@@ -55,9 +56,21 @@ def generate_launch_description():
                 'See datasheet Figure 4-3  page 41 for the valid combinations.'
         ),
         DeclareLaunchArgument(
+            'imu_rate',
+            default_value='100',
+            description='IMU sensor rate in Hz.'
+                'See datasheet Figure 6-16  page 50.'
+        ),
+        DeclareLaunchArgument(
             'enable_magnetometer',
             default_value='false',
             description='Enable magnetometer in hardware_interface'
+        ),
+        DeclareLaunchArgument(
+            'magnetometer_rate',
+            default_value='100',
+            description='Magnetometer rate in Hz.'
+                'See datasheet Figure 6-16  page 50.'
         ),
         DeclareLaunchArgument(
             'enable_mock_mode',
@@ -85,7 +98,9 @@ def generate_launch_description():
     i2c_device = LaunchConfiguration('i2c_device')
     i2c_addr = LaunchConfiguration('i2c_addr')
     axis_remap = LaunchConfiguration('axis_remap')
+    imu_rate = LaunchConfiguration('imu_rate')
     enable_magnetometer = LaunchConfiguration('enable_magnetometer')
+    magnetometer_rate = LaunchConfiguration('magnetometer_rate')
     enable_mock = LaunchConfiguration('enable_mock_mode')
     publish_tf = LaunchConfiguration('publish_tf')
     publish_diagnostics = LaunchConfiguration('publish_diagnostics')
@@ -105,7 +120,11 @@ def generate_launch_description():
             ' ',
             'axis_remap:=', axis_remap,
             ' ',
+            'imu_rate:=', imu_rate,
+            ' ',
             'enable_magnetometer:=', enable_magnetometer,
+            ' ',
+            'magnetomeer_rate:=', magnetometer_rate,
             ' ',
             'enable_mock_mode:=', enable_mock,
         ]

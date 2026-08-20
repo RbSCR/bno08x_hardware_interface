@@ -76,6 +76,14 @@ TEST(InitTest, ValidParams)
   EXPECT_EQ(init(make_valid_imu_info("/dev/i2c-bn08x", "4B")), CallbackReturn::SUCCESS);
   // device /dev/i2c-bn08x, addr 0x4B
 
+  auto imu_rate_standard_explicit = make_valid_imu_info();
+  imu_rate_standard_explicit.hardware_parameters["imu_rate"] = "100";
+  EXPECT_EQ(init(imu_rate_standard_explicit), CallbackReturn::SUCCESS);
+
+  auto imu_rate_nonstandard = make_valid_imu_info();
+  imu_rate_nonstandard.hardware_parameters["imu_rate"] = "155";
+  EXPECT_EQ(init(imu_rate_nonstandard), CallbackReturn::SUCCESS);
+
   auto magnetometer_enabled = make_valid_imu_info();
   magnetometer_enabled.hardware_parameters["enable_magnetometer"] = "true";
   EXPECT_EQ(init(magnetometer_enabled), CallbackReturn::SUCCESS);
@@ -83,6 +91,16 @@ TEST(InitTest, ValidParams)
   auto magnetometer_disabled = make_valid_imu_info();
   magnetometer_disabled.hardware_parameters["enable_magnetometer"] = "false";
   EXPECT_EQ(init(magnetometer_disabled), CallbackReturn::SUCCESS);
+
+  auto magnetometer_rate_standard_explicit = make_valid_imu_info();
+  magnetometer_rate_standard_explicit.hardware_parameters["enable_magnetometer"] = "true";
+  magnetometer_rate_standard_explicit.hardware_parameters["magnetometer_rate"] = "100";
+  EXPECT_EQ(init(magnetometer_rate_standard_explicit), CallbackReturn::SUCCESS);
+
+  auto magnetometer_rate_nonstandard = make_valid_imu_info();
+  magnetometer_rate_nonstandard.hardware_parameters["enable_magnetometer"] = "true";
+  magnetometer_rate_nonstandard.hardware_parameters["magnetometer_rate"] = "55";
+  EXPECT_EQ(init(magnetometer_rate_nonstandard), CallbackReturn::SUCCESS);
 
   auto mock_enabled = make_valid_imu_info();
   mock_enabled.hardware_parameters["enable_mock_mode"] = "true";
@@ -154,6 +172,44 @@ TEST(InitTest, InvalidParamsFail)
       return i;
     }());
   EXPECT_EQ(init(bad_iface), CallbackReturn::ERROR);
+
+  auto imu_rate_tohigh = make_valid_imu_info();
+  imu_rate_tohigh.hardware_parameters["imu_rate"] = "410";
+  EXPECT_EQ(init(imu_rate_tohigh), CallbackReturn::ERROR);
+
+  auto imu_rate_zero = make_valid_imu_info();
+  imu_rate_zero.hardware_parameters["imu_rate"] = "0";
+  EXPECT_EQ(init(imu_rate_zero), CallbackReturn::ERROR);
+
+  auto imu_rate_hexvalue = make_valid_imu_info();
+  imu_rate_hexvalue.hardware_parameters["imu_rate"] = "0xF1";
+                                        // note: should be converted to value: 0
+  EXPECT_EQ(init(imu_rate_hexvalue), CallbackReturn::ERROR);
+
+  auto imu_rate_stringvalue = make_valid_imu_info();
+  imu_rate_stringvalue.hardware_parameters["imu_rate"] = "ABC";
+  EXPECT_EQ(init(imu_rate_stringvalue), CallbackReturn::ERROR);
+
+  auto magnetometer_rate_tohigh = make_valid_imu_info();
+  magnetometer_rate_tohigh.hardware_parameters["enable_magnetometer"] = "true";
+  magnetometer_rate_tohigh.hardware_parameters["magnetometer_rate"] = "110";
+  EXPECT_EQ(init(magnetometer_rate_tohigh), CallbackReturn::ERROR);
+
+  auto magnetometer_rate_zero = make_valid_imu_info();
+  magnetometer_rate_zero.hardware_parameters["enable_magnetometer"] = "true";
+  magnetometer_rate_zero.hardware_parameters["magnetometer_rate"] = "0";
+  EXPECT_EQ(init(magnetometer_rate_zero), CallbackReturn::ERROR);
+
+  auto magnetometer_rate_hexvalue = make_valid_imu_info();
+  magnetometer_rate_hexvalue.hardware_parameters["enable_magnetometer"] = "true";
+  magnetometer_rate_hexvalue.hardware_parameters["magnetometer_rate"] = "0xFF";
+                                                // note: should be converted to value: 0
+  EXPECT_EQ(init(magnetometer_rate_hexvalue), CallbackReturn::ERROR);
+
+  auto magnetometer_rate_stringvalue = make_valid_imu_info();
+  magnetometer_rate_stringvalue.hardware_parameters["enable_magnetometer"] = "true";
+  magnetometer_rate_stringvalue.hardware_parameters["magnetometer_rate"] = "KLM";
+  EXPECT_EQ(init(magnetometer_rate_stringvalue), CallbackReturn::ERROR);
 }
 
 // ── export_state_interfaces ───────────────────────────────────────────────────

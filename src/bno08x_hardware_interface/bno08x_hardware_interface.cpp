@@ -110,7 +110,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     try {
       i2c_addr_ = static_cast<uint8_t>(std::stoul(it->second, nullptr, 16));
     } catch (const std::exception & e) {
-      RCLCPP_ERROR(logger_, "Invalid i2c_addr: %s", e.what());
+      RCLCPP_ERROR(logger_, "Convert-error i2c_addr: %s", e.what());
       return hardware_interface::CallbackReturn::ERROR;
     }
   }
@@ -132,8 +132,55 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
+  // imu_rate (default: 100 Hz)
+  if (const auto it = info_.hardware_parameters.find("imu_rate");
+    it != info_.hardware_parameters.end())
+  {
+    try {
+      imu_rate_ = static_cast<int>(std::stoul(it->second, nullptr, 10));
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(logger_, "Convert-error imu_rate: %s", e.what());
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+  }
+  // check imu_rate ; Datasheet page 50 figure 6-16
+  if (imu_rate_ > 400) {
+    RCLCPP_ERROR(logger_, "Imu rate (%d) is greater than max. rate (400)", imu_rate_);
+    return hardware_interface::CallbackReturn::ERROR;
+  }
+  if (imu_rate_ <= 0) {
+    RCLCPP_ERROR(logger_, "Imu rate (%d) is equal to or smaller than zero", imu_rate_);
+    return hardware_interface::CallbackReturn::ERROR;
+  }
+
   // enable_magnetometer (default: false)
   enable_magnetometer_ = parse_bool_param("enable_magnetometer", false);
+
+  if(enable_magnetometer_) {
+    // magnetometer_rate (default: 100 Hz)
+    if (const auto it = info_.hardware_parameters.find("magnetometer_rate");
+      it != info_.hardware_parameters.end())
+    {
+      try {
+        magnetometer_rate_ = static_cast<int>(std::stoul(it->second, nullptr, 10));
+      } catch (const std::exception & e) {
+        RCLCPP_ERROR(logger_, "Convert-error magnetometer_rate: %s", e.what());
+        return hardware_interface::CallbackReturn::ERROR;
+      }
+    }
+
+    // check magnetometer rate ; Datasheet page 50 figure 6-16
+    if (magnetometer_rate_ > 100) {
+      RCLCPP_ERROR(logger_, "Magnetometer rate (%d) is greater than max. rate (100)",
+        magnetometer_rate_);
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+    if (magnetometer_rate_ <= 0) {
+      RCLCPP_ERROR(logger_, "Magnetometer rate (%d) is equal to or smaller than zero",
+        magnetometer_rate_);
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+  }
 
   // enable_mock_mode (default: false)
   enable_mock_ = parse_bool_param("enable_mock_mode", false);
@@ -171,9 +218,10 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   RCLCPP_INFO(
     logger_,
-    "Initialized: i2c_device=%s i2c_addr=0x%02X axis_remap=%s magneto=%s mock=%s",
-    i2c_device_.c_str(), i2c_addr_, axis_remap_.c_str(),
-    enable_magnetometer_ ? "true" : "false", enable_mock_ ? "true" : "false");
+    "Initialized: i2c_device=%s i2c_addr=0x%02X axis_remap=%s imu_rate=%d "
+    "magneto_enabled=%s magneto_rate=%d mock_enabled=%s",
+    i2c_device_.c_str(), i2c_addr_, axis_remap_.c_str(), imu_rate_,
+    enable_magnetometer_ ? "true" : "false", magnetometer_rate_, enable_mock_ ? "true" : "false");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
