@@ -7,7 +7,9 @@
   <xacro:arg name="i2c_device"           default="/dev/i2c-bno08x"/>
   <xacro:arg name="i2c_addr"             default="4A"/>    <!-- hex, no 0x prefix: 4A = 0x4A -->
   <xacro:arg name="axis_remap"           default="East-North-Up"/>  <!-- See BNO08X datasheet Table 4-3  page 41 -->
+  <xacro:arg name="imu_rate"             default="100"/>   <!-- See BNO08X datasheet Figure 6-16 page 50-->
   <xacro:arg name="enable_magnetometer"  default="false"/>
+  <xacro:arg name="magnetometer_rate"    default="100"/>   <!-- See BNO08X datasheet Figure 6-16 page 50-->
   <xacro:arg name="enable_mock_mode"     default="false"/>
 
   <!-- Robot links -->
@@ -42,7 +44,10 @@
 
       <!-- Sensor Configuration -->
       <param name="axis_remap">$(arg axis_remap)</param>     <!-- Axis placement config -->
+      <param name="imu_rate">$(arg imu_rate)</param>
       <param name="enable_magnetometer">$(arg enable_magnetometer)</param>
+      <param name="magnetometer_rate">$(arg magnetometer_rate)</param>
+
       <param name="enable_mock_mode">$(arg enable_mock_mode)</param>   <!-- Simulation mode, no hardware required (default: false) -->
     </hardware>
 

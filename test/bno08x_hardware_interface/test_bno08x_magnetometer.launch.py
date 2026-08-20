@@ -69,7 +69,9 @@ def generate_test_description():
         'i2c_device':             '/dev/i2c-1',
         'i2c_addr':               '4A',
         'axis_remap':             'East-North-Up',
+        'imu_rate':               '100',
         'enable_magnetometer':    'true',
+        'magnetometer_rate':      '100',
         'broadcast_magnetometer': 'true',
         'publish_diagnostics':    'false',
     }
