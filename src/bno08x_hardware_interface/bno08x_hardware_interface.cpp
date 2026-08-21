@@ -89,6 +89,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
+  RCLCPP_INFO(logger_, "BNO08X hardware interface entering on_init");
   RCLCPP_INFO(logger_, "Initializing BNO08X hardware interface: %s", info_.name.c_str());
 
   // i2c_device
@@ -222,6 +223,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
     "magneto_enabled=%s magneto_rate=%d mock_enabled=%s",
     i2c_device_.c_str(), i2c_addr_, axis_remap_.c_str(), imu_rate_,
     enable_magnetometer_ ? "true" : "false", magnetometer_rate_, enable_mock_ ? "true" : "false");
+    RCLCPP_INFO(logger_, "BNO08X hardware interface: %s initialized", info_.name.c_str());
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -232,6 +234,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  RCLCPP_INFO(logger_, "BNO08X hardware interface entering on_configure");
   RCLCPP_INFO(logger_, "Configuring BNO08X...");
   consecutive_read_errors_ = 0;   // TODO(rbscr) check needed for bno08x
 
@@ -266,7 +269,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   // Remap axis
   sh2_Quaternion_t quat = kAxisRemap.at(axis_remap_);
   if (!this->bno08x_->setReorientation(&quat)) {
-    RCLCPP_WARN(logger_, "Failed to remap axis to %s", axis_remap_.c_str());
+    RCLCPP_WARN(logger_, "Failed to remap axis to %s. Continuing with default axis orientation",
+      axis_remap_.c_str());
   } else {
     RCLCPP_INFO(logger_, "Axis remap to %s succesfull", axis_remap_.c_str());
   }
@@ -297,6 +301,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_deactivate(
 hardware_interface::CallbackReturn BNO08XHardwareInterface::on_cleanup(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  RCLCPP_INFO(logger_, "BNO08X hardware interface entering on_cleanup — closing hardware");
   close_hardware();
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -304,6 +309,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_cleanup(
 hardware_interface::CallbackReturn BNO08XHardwareInterface::on_shutdown(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  RCLCPP_INFO(logger_, "BNO08X hardware interface entering on_shutdown — closing hardware");
   close_hardware();
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -383,7 +389,7 @@ void BNO08XHardwareInterface::init_sensor()
   }
   if (imu_report_issues)
   {
-    RCLCPP_ERROR(logger_, "Failed to enable all 3 IMU reports");
+    RCLCPP_ERROR(logger_, "Failed to enable IMU reports");
     throw std::runtime_error("BNO08x IMU reports failed");
   }
 
