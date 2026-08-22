@@ -124,7 +124,7 @@ def generate_launch_description():
             ' ',
             'enable_magnetometer:=', enable_magnetometer,
             ' ',
-            'magnetomeer_rate:=', magnetometer_rate,
+            'magnetometer_rate:=', magnetometer_rate,
             ' ',
             'enable_mock_mode:=', enable_mock,
         ]
