@@ -6,7 +6,7 @@ Starts the complete ros2_control stack for the BNO08x IMU, including:
 - Robot state publisher for TF transforms
 - Controller manager with the BNO08x SensorInterface hardware plugin
 - IMU sensor broadcaster publishing sensor_msgs/Imu to /imu_sensor_broadcaster/imu
-- Magnetometer broadcaster publishing sensor_msgs/MagneticField
+- Magnetometer broadcaster publishing sensor_msgs/MagneticField to /magnetometer_broadcaster/magnetic_field
 
 This is a convenience launch file. The same functionality can be achieved
 by using the 'bno08x.launch.py' file with the parameters 'enable_magnetometer:=true'
@@ -20,7 +20,7 @@ Base usage:
     See the declared_arguments below for the default values.
 
 Example (other) usage:
-    <base-usage> i2c_device:=/dev/i2c-bno08-B i2c_addr:=4B
+    <base-usage> i2c_bus:=1 i2c_addr:=4B
     <base-usage> axis_remap:=North-West-Up
     <base-usage> enable_mock_mode:=true
     <base-usage> publish_tf:=false
@@ -44,9 +44,9 @@ def generate_launch_description():
     # Declare arguments
     declared_arguments = [
         DeclareLaunchArgument(
-            'i2c_device',
-            default_value='/dev/i2c-bno08x',
-            description='I2C device name (e.g. /dev/i2c-bno08x)'
+            'i2c_bus',
+            default_value='1',
+            description='I2C bus number (e.g. 1  >> /dev/i2c-1)'
         ),
         DeclareLaunchArgument(
             'i2c_addr',
@@ -109,7 +109,7 @@ def generate_launch_description():
         ),
     ]
 
-    i2c_device = LaunchConfiguration('i2c_device')
+    i2c_bus = LaunchConfiguration('i2c_bus')
     i2c_addr = LaunchConfiguration('i2c_addr')
     axis_remap = LaunchConfiguration('axis_remap')
     imu_rate = LaunchConfiguration('imu_rate')
@@ -129,7 +129,7 @@ def generate_launch_description():
                 [FindPackageShare('bno08x_hardware_interface'), 'config', 'bno08x_magnetometer.urdf.xacro']
             ),
             ' ',
-            'i2c_device:=', i2c_device,
+            'i2c_bus:=', i2c_bus,
             ' ',
             'i2c_addr:=', i2c_addr,
             ' ',
@@ -203,7 +203,7 @@ def generate_launch_description():
         name='bno8x_diagnostics',
         output='screen',
         parameters=[{
-            'i2c_device':  i2c_device,
+            'i2c_bus':  i2c_bus,
             'i2c_addr':    ParameterValue(i2c_addr, value_type=str),
             'enable_mock_mode': ParameterValue(enable_mock, value_type=str),
         }],

@@ -92,14 +92,14 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
   RCLCPP_INFO(logger_, "BNO08X hardware interface entering on_init");
   RCLCPP_INFO(logger_, "Initializing BNO08X hardware interface: %s", info_.name.c_str());
 
-  // i2c_device
-  if (const auto it = info_.hardware_parameters.find("i2c_device");
+  // i2c_bus (default: 1)
+  if (const auto it = info_.hardware_parameters.find("i2c_bus");
     it != info_.hardware_parameters.end())
   {
-    i2c_device_ = it->second;
-
-    if (i2c_device_.empty() ) {
-      RCLCPP_ERROR(logger_, "No i2c_device");
+    try {
+      i2c_bus_ = std::stoi(it->second);
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(logger_, "Convert-error i2c_bus: %s", e.what());
       return hardware_interface::CallbackReturn::ERROR;
     }
   }
@@ -219,9 +219,9 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   RCLCPP_INFO(
     logger_,
-    "Initialized: i2c_device=%s i2c_addr=0x%02X axis_remap=%s imu_rate=%d "
-    "magneto_enabled=%s magneto_rate=%d mock_enabled=%s",
-    i2c_device_.c_str(), i2c_addr_, axis_remap_.c_str(), imu_rate_,
+    "Initialized: i2c_bus=%d i2c_addr=0x%02X axis_remap=%s imu_rate=%d "
+    "magnetometer_enabled=%s magnetometer_rate=%d mock_enabled=%s",
+    i2c_bus_, i2c_addr_, axis_remap_.c_str(), imu_rate_,
     enable_magnetometer_ ? "true" : "false", magnetometer_rate_, enable_mock_ ? "true" : "false");
     RCLCPP_INFO(logger_, "BNO08X hardware interface: %s initialized", info_.name.c_str());
 
@@ -329,10 +329,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_error(
 
 void BNO08XHardwareInterface::init_communication()
 {
-  std::string device = i2c_device_;
-    // | std::string address;
-    // | this->get_parameter("i2c.bus", device);
-    // | this->get_parameter("i2c.address", address);
+  std::string device = "/dev/i2c-" + std::to_string(i2c_bus_);
+
   RCLCPP_INFO(logger_, "Communication Interface: I2C");
   try
     {

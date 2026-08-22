@@ -27,19 +27,18 @@ import rclpy
 
 def _bno08x_available() -> bool:
     """Return True if BNO08X responds at /dev/i2c-1, address 0x4A."""
-    # Using '/dev/i2c-1' (instead of '/dev/i2c_bno08x') because of the use of 'i2cget'
-    # and name-consistency.
+    # Deliberate leaving the fourth param of i2cget out.
+    # The BNO08X sensor doesn't have a chip-ID to check.
     if not os.path.exists('/dev/i2c-1'):
         return False
     try:
         result = subprocess.run(
-            ['i2cget', '-y', '1', '0x4A', '0x00'],
+            ['i2cget', '-y', '1', '0x4A' ],
             capture_output=True,
             timeout=3,
         )
-        # Chip-ID register must return 0xa0
-        # TODO(rbscr) check chip-id register of BNO08X
-        return result.returncode == 0 and b'0xa0' in result.stdout.strip().lower()
+        # Expected return value 0x14
+        return result.returncode == 0 and b'0x14' in result.stdout.strip().lower()
     except Exception:
         return False
 
@@ -66,7 +65,7 @@ def generate_test_description():
     bno08x_launch = os.path.join(pkg_share, 'launch', 'bno08x_magnetometer.launch.py')
 
     launch_args = {
-        'i2c_device':             '/dev/i2c-1',
+        'i2c_bus':                '1',
         'i2c_addr':               '4A',
         'axis_remap':             'East-North-Up',
         'imu_rate':               '100',

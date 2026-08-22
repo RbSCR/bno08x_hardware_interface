@@ -4,7 +4,7 @@
   <!-- copied (and adapted) from bno055_hardware_interface (github.com/adityakamath) -->
 
   <!-- Arguments -->
-  <xacro:arg name="i2c_device"           default="/dev/i2c-bno08x"/>
+  <xacro:arg name="i2c_bus"              default="1"/>
   <xacro:arg name="i2c_addr"             default="4A"/>    <!-- hex, no 0x prefix: 4A = 0x4A -->
   <xacro:arg name="axis_remap"           default="East-North-Up"/>  <!-- See BNO08X datasheet Table 4-3  page 41 -->
   <xacro:arg name="imu_rate"             default="100"/>   <!-- See BNO08X datasheet Figure 6-16 page 50-->
@@ -39,8 +39,8 @@
       <plugin>bno08x_hardware_interface/BNO08XHardwareInterface</plugin>
 
       <!-- I2C Parameters -->
-      <param name="i2c_device">$(arg i2c_device)</param>  <!-- I2C device name (default: /dev/i2c-bno08x) -->
-      <param name="i2c_addr">$(arg i2c_addr)</param>      <!-- I2C address in hex, no 0x prefix (default: 28 = 0x28) -->
+      <param name="i2c_bus">$(arg i2c_bus)</param>    <!-- I2C bus (default: 1 >> /dev/i2c-1) -->
+      <param name="i2c_addr">$(arg i2c_addr)</param>  <!-- I2C address in hex, no 0x prefix (default: 28 = 0x28) -->
 
       <!-- Sensor Configuration -->
       <param name="axis_remap">$(arg axis_remap)</param>     <!-- Axis placement config -->

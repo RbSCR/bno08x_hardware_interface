@@ -107,7 +107,7 @@ private:
   rclcpp::Logger logger_;
 
   // Parameters
-  std::string i2c_device_;
+  int         i2c_bus_{1};
   uint8_t     i2c_addr_{0x4A};  // Default 0x4A, alternative 0x4B  Par 1.2.2.1 Datasheet BNO08X
   std::string axis_remap_{"East-North-Up"};
 
