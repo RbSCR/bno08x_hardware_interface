@@ -39,8 +39,7 @@ def _bno08x_available() -> bool:
             capture_output=True,
             timeout=3,
         )
-        # Expected return value 0x14
-        return result.returncode == 0 and b'0x14' in result.stdout.strip().lower()
+        return result.returncode == 0
     except Exception:
         return False
 

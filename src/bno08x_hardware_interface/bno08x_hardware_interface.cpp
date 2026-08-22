@@ -402,6 +402,15 @@ void BNO08XHardwareInterface::init_sensor()
     }
   }
 
+  int poll_timer_rate = imu_rate_;
+  if (enable_magnetometer_ && imu_rate_ < magnetometer_rate_) {
+    poll_timer_rate = magnetometer_rate_;
+  }
+  this->poll_timer_ = this->get_node()->create_wall_timer(
+      std::chrono::milliseconds(1000/poll_timer_rate),   // Hz to ms
+      std::bind(&BNO08XHardwareInterface::poll_timer_callback, this));
+
+
   // Initialize the watchdog timer
   auto timeout = std::chrono::milliseconds(2000);  // TODO(rbscr) check watchdog rate
   watchdog_ = new Watchdog();
@@ -423,7 +432,8 @@ void BNO08XHardwareInterface::init_sensor()
  */
 void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* sensor_value)
 {
-  RCLCPP_DEBUG(logger_, "Sensor Callback");
+  RCLCPP_INFO(logger_, "Sensor callback");  // HACK(rbscr) remove after physical test
+  //  RCLCPP_DEBUG(logger_, "Sensor Callback");
   watchdog_->reset();
 
   switch (sensor_value->sensorId)
@@ -456,6 +466,21 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
     default:
       break;
   }
+}
+
+/**
+ * @brief Poll the sensor for new events
+ *
+ * This function is called periodically at the rate of the fastest sensor report
+ * to get the buffered sensor events
+ * called by the poll_timer_ timer
+ */
+void BNO08XHardwareInterface::poll_timer_callback() {
+    {
+      RCLCPP_INFO(logger_, "Polling sensor");  // HACK(rbscr) remove after physical test
+      std::lock_guard<std::mutex> lock(bno08x_mutex_);
+      this->bno08x_->poll();
+    }
 }
 
 void BNO08XHardwareInterface::reset() {
@@ -534,6 +559,8 @@ hardware_interface::return_type BNO08XHardwareInterface::read(
   // to the state_interface.
   // In this hardware_interface the sensor_callback() 'transfers' the sensorvalues
   // to the state_interface.
+
+  RCLCPP_INFO(logger_, "Read sensor");  // HACK(rbscr) remove after physical test
 
   return hardware_interface::return_type::OK;
 }

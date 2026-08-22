@@ -120,6 +120,9 @@ private:
   // Consecutive read failures before returning ERROR (threshold = 10)
   int consecutive_read_errors_{0};  // TODO(rbscr) check used / needed in bno08x
 
+  // ROS Timer
+  rclcpp::TimerBase::SharedPtr poll_timer_;
+
   // BNO08X Sensor Interface
   BNO08x* bno08x_;
   std::mutex bno08x_mutex_;
