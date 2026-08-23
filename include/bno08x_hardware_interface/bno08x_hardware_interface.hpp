@@ -117,9 +117,6 @@ private:
 
   bool enable_mock_{false};
 
-  // Consecutive read failures before returning ERROR (threshold = 10)
-  int consecutive_read_errors_{0};  // TODO(rbscr) check used / needed in bno08x
-
   // ROS Timer
   rclcpp::TimerBase::SharedPtr poll_timer_;
 
