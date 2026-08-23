@@ -236,10 +236,10 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
 {
   RCLCPP_INFO(logger_, "BNO08X hardware interface entering on_configure");
   RCLCPP_INFO(logger_, "Configuring BNO08X...");
-  consecutive_read_errors_ = 0;   // TODO(rbscr) check needed for bno08x
 
   if (enable_mock_) {
     RCLCPP_INFO(logger_, "Mock mode enabled - skipping communication initialization");
+
     // Identity quaternion: represents no rotation (robot aligned with world frame).
     // A zero quaternion is mathematically invalid and would produce NaN in the EKF.
     hw_orientation_w_ = 1.0;
@@ -432,8 +432,6 @@ void BNO08XHardwareInterface::init_sensor()
  */
 void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* sensor_value)
 {
-  RCLCPP_INFO(logger_, "Sensor callback");  // HACK(rbscr) remove after physical test
-  //  RCLCPP_DEBUG(logger_, "Sensor Callback");
   watchdog_->reset();
 
   switch (sensor_value->sensorId)
@@ -477,7 +475,6 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
  */
 void BNO08XHardwareInterface::poll_timer_callback() {
     {
-      RCLCPP_INFO(logger_, "Polling sensor");  // HACK(rbscr) remove after physical test
       std::lock_guard<std::mutex> lock(bno08x_mutex_);
       this->bno08x_->poll();
     }
@@ -543,13 +540,10 @@ BNO08XHardwareInterface::export_state_interfaces()
     state_count += 3;
   }
 
-  // TODO(rbscr) after testing physical device: remove next line or change to RCLCPP_DEBUG
-  RCLCPP_INFO(logger_, "Exported %d state interfaces for sensor '%s'",
-                        state_count, sensor_name.c_str());
   return state_interfaces;
 }
 
-// ── read: poll BNO08X and update state interfaces ────────────────────────────
+// ── read: update state interfaces ────────────────────────────────────────────────
 
 hardware_interface::return_type BNO08XHardwareInterface::read(
     const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
@@ -559,8 +553,6 @@ hardware_interface::return_type BNO08XHardwareInterface::read(
   // to the state_interface.
   // In this hardware_interface the sensor_callback() 'transfers' the sensorvalues
   // to the state_interface.
-
-  RCLCPP_INFO(logger_, "Read sensor");  // HACK(rbscr) remove after physical test
 
   return hardware_interface::return_type::OK;
 }
