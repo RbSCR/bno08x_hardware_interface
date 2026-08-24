@@ -85,7 +85,7 @@ def generate_launch_description():
             ),
         ),
         DeclareLaunchArgument(
-            # TODO(rbscr) diagnostics temporarily default disabled
+            # TODO(rbscr) diagnostics temporarily default disabled; awaiting ENHANCEMENT
             'publish_diagnostics',
             default_value='false',
             description=(
@@ -171,7 +171,7 @@ def generate_launch_description():
         condition=IfCondition(publish_tf),
     )
 
-    # TODO(rbscr) diagnostics_node nog maken (of in hardware_interface opnemen)
+    # ENHANCEMENT(rbscr) diagnostics_node nog maken (of in hardware_interface opnemen)
     # Optional: publish sensor health and calibration status to /diagnostics at 1 Hz.
     # Compatible with rqt_robot_monitor and diagnostic_aggregator.
     bno08x_diagnostics_node = Node(
