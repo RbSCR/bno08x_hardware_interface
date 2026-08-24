@@ -9,8 +9,6 @@ so the suite always runs in CI regardless of sensor availability.
 Note: magnetometer_broadcaster is tested in 'test_bno08x_magnetometer.launch.py'
 """
 
-# TODO(rbscr) change 'bus' tests, use device
-
 import math
 import os
 import subprocess
@@ -73,7 +71,7 @@ def generate_test_description():
         'enable_magnetometer':  'false',
         'publish_diagnostics':  'false',
     }
-    # TODO(rbscr)  diagnostics temporarily disabled, will be future enhancement
+    # TODO(rbscr)  diagnostics temporarily disabled, future enhancement
 
     if not BNO08X_AVAILABLE:
         launch_args['enable_mock_mode'] = 'true'
@@ -264,7 +262,7 @@ class TestBNO08XLaunch(unittest.TestCase):
         )
 
     # ── Diagnostics ──────────────────────────────────────────────
-    # TODO(rbscr)  diagnostics temporarily disabled
+    # TODO(rbscr)  diagnostics temporarily disabled, future ENHANCEMENT
 
     #def test_diagnostics_topic_published(self):
     #    """Verify /diagnostics publishes at least one DiagnosticArray message."""

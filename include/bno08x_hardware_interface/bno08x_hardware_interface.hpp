@@ -62,11 +62,10 @@ public:
   hardware_interface::CallbackReturn on_shutdown(
     const rclcpp_lifecycle::State & previous_state) override;
 
-  // Called by ros2_control when read() returns ERROR (after 10 consecutive failures).
+  // Called by ros2_control when read() returns ERROR.
   // The base-class default returns ERROR → FINALIZED, bypassing on_cleanup and leaking
-  // the I2C fd. Override to close hardware and return SUCCESS → UNCONFIGURED so the
+  // the I2C comm. Override to close hardware and return SUCCESS → UNCONFIGURED so the
   // controller manager can attempt reconfiguration without a process restart.
-  // TODO(rbscr) check implementation in bn055 hardware interface ; check comment
   hardware_interface::CallbackReturn on_error(
     const rclcpp_lifecycle::State & previous_state) override;
 

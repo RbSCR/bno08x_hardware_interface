@@ -94,8 +94,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   // i2c_bus (default: 1)
   if (const auto it = info_.hardware_parameters.find("i2c_bus");
-    it != info_.hardware_parameters.end())
-  {
+      it != info_.hardware_parameters.end()) {
     try {
       i2c_bus_ = std::stoi(it->second);
     } catch (const std::exception & e) {
@@ -118,7 +117,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   // axis_remap (default: "East-North-Up")
   if (const auto it = info_.hardware_parameters.find("axis_remap");
-    it != info_.hardware_parameters.end())
+      it != info_.hardware_parameters.end())
   {
     axis_remap_ = it->second;
   } else {
@@ -135,7 +134,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_init(
 
   // imu_rate (default: 100 Hz)
   if (const auto it = info_.hardware_parameters.find("imu_rate");
-    it != info_.hardware_parameters.end())
+      it != info_.hardware_parameters.end())
   {
     try {
       imu_rate_ = static_cast<int>(std::stoul(it->second, nullptr, 10));
@@ -268,7 +267,7 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
 
   // Remap axis
   sh2_Quaternion_t quat = kAxisRemap.at(axis_remap_);
-  if (!this->bno08x_->setReorientation(&quat)) {
+  if (!bno08x_->setReorientation(&quat)) {
     RCLCPP_WARN(logger_, "Failed to remap axis to %s. Continuing with default axis orientation",
       axis_remap_.c_str());
   } else {
@@ -324,7 +323,6 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_error(
   return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-
 // Initialize communications
 
 void BNO08XHardwareInterface::init_communication()
@@ -363,56 +361,51 @@ void BNO08XHardwareInterface::init_sensor()
     throw std::runtime_error("BNO08x object allocation failed");
   }
 
-  if (!bno08x_->begin())
-  {
+  if (!bno08x_->begin()) {
     RCLCPP_ERROR(logger_, "Failed to initialize BNO08X sensor");
     throw std::runtime_error("BNO08x initialization failed");
   }
 
   bool imu_report_issues{false};
-  if (!this->bno08x_->enable_report(SH2_ROTATION_VECTOR, 1000000 / this->imu_rate_))
-  {  // Hz to us
+  if (!bno08x_->enable_report(SH2_ROTATION_VECTOR, 1000000 / imu_rate_ /* Hz to us */ )) {
     RCLCPP_ERROR(logger_, "Failed to enable rotation vector sensor");
     imu_report_issues = true;
   }
-  if (!this->bno08x_->enable_report(SH2_ACCELEROMETER, 1000000 / this->imu_rate_))
-  {  // Hz to us
+  if (!bno08x_->enable_report(SH2_ACCELEROMETER, 1000000 / imu_rate_ /* Hz to us */ )) {
     RCLCPP_ERROR(logger_, "Failed to enable accelerometer sensor");
     imu_report_issues = true;
   }
-  if (!this->bno08x_->enable_report(SH2_GYROSCOPE_CALIBRATED, 1000000 / this->imu_rate_))
-  {  // Hz to us
+  if (!bno08x_->enable_report(SH2_GYROSCOPE_CALIBRATED, 1000000 / imu_rate_ /* Hz to us */ )) {
     RCLCPP_ERROR(logger_, "Failed to enable gyroscope sensor");
     imu_report_issues = true;
   }
-  if (imu_report_issues)
-  {
+  if (imu_report_issues) {
     RCLCPP_ERROR(logger_, "Failed to enable IMU reports");
     throw std::runtime_error("BNO08x IMU reports failed");
   }
 
-  if (enable_magnetometer_)
+  if (enable_magnetometer_) {
     RCLCPP_INFO(logger_, "Enabling magnetometer");
-  {
-    if (!this->bno08x_->enable_report(SH2_MAGNETIC_FIELD_CALIBRATED,
-          1000000 / this->magnetometer_rate_))
-    {  // Hz to us
-      RCLCPP_ERROR(logger_, "Failed to enable magnetometer");
+    if (!bno08x_->enable_report(SH2_MAGNETIC_FIELD_CALIBRATED,
+      1000000 / magnetometer_rate_ /* Hz to us */ ))
+    {
+      RCLCPP_ERROR(logger_, "Failed to enable magnetometer. Continuing without magnetometer.");
       enable_magnetometer_ = false;
     }
   }
 
+  // Initialize the sensor poll_timer at the rate of the fastest sensor/report
   int poll_timer_rate = imu_rate_;
   if (enable_magnetometer_ && imu_rate_ < magnetometer_rate_) {
     poll_timer_rate = magnetometer_rate_;
   }
-  this->poll_timer_ = this->get_node()->create_wall_timer(
-      std::chrono::milliseconds(1000/poll_timer_rate),   // Hz to ms
+  poll_timer_ = get_node()->create_wall_timer(
+      std::chrono::milliseconds(1000000/poll_timer_rate /* Hz to us */ ),
       std::bind(&BNO08XHardwareInterface::poll_timer_callback, this));
 
 
   // Initialize the watchdog timer
-  auto timeout = std::chrono::milliseconds(2000);  // TODO(rbscr) check watchdog rate
+  auto timeout = std::chrono::milliseconds(2000);
   watchdog_ = new Watchdog();
   watchdog_->set_timeout(timeout);
   watchdog_->set_check_interval(timeout / 2);
@@ -470,20 +463,19 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
  * @brief Poll the sensor for new events
  *
  * This function is called periodically at the rate of the fastest sensor report
- * to get the buffered sensor events
- * called by the poll_timer_ timer
+ * to get the buffered sensor events. Called by the poll_timer_ timer
  */
 void BNO08XHardwareInterface::poll_timer_callback() {
     {
       std::lock_guard<std::mutex> lock(bno08x_mutex_);
-      this->bno08x_->poll();
+      bno08x_->poll();
     }
 }
 
 void BNO08XHardwareInterface::reset() {
     std::lock_guard<std::mutex> lock(bno08x_mutex_);
     delete bno08x_;
-    this->init_sensor();
+    init_sensor();
 }
 
 void BNO08XHardwareInterface::close_hardware()
@@ -561,7 +553,7 @@ bool BNO08XHardwareInterface::parse_bool_param(
   const std::string & key, bool default_value) const
 {
   auto it = info_.hardware_parameters.find(key);
-  if (it == info_.hardware_parameters.end()) {return default_value;}
+  if (it == info_.hardware_parameters.end()) { return default_value; }
   return it->second == "true";
 }
 
