@@ -266,12 +266,14 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_configure(
   // ENHANCEMENT(rbscr) add chip/sensor info to init_sensor. compare bno0555
 
   // Log sensor product info
-  RCLCPP_INFO(logger_, "Product info");
+  RCLCPP_INFO(logger_, "Product-info %s", info_.name.c_str());
   for(int i = 0; i < bno08x_->prodIds.numEntries; i++) {
-    RCLCPP_INFO(logger_, "Part: %u", bno08x_->prodIds.entry[i].swPartNumber);
-    RCLCPP_INFO(logger_, "  Build: %u", bno08x_->prodIds.entry[i].swBuildNumber);
-    RCLCPP_INFO(logger_, "  Version: %d.%d.%u", (int)bno08x_->prodIds.entry[i].swVersionMajor,
-      (int)bno08x_->prodIds.entry[i].swVersionMinor, bno08x_->prodIds.entry[i].swVersionPatch);
+    RCLCPP_INFO(logger_, "  Part: %u  Build: %u Version: %d.%d.%u",
+      bno08x_->prodIds.entry[i].swPartNumber,
+      bno08x_->prodIds.entry[i].swBuildNumber,
+      (int)bno08x_->prodIds.entry[i].swVersionMajor,
+      (int)bno08x_->prodIds.entry[i].swVersionMinor,
+      bno08x_->prodIds.entry[i].swVersionPatch);
   }
 
   // Remap axis
