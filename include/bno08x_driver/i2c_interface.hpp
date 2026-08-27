@@ -135,7 +135,7 @@ public:
 
   int write(uint8_t *pBuffer, unsigned len) override {
     size_t write_size = std::min((size_t)32, (size_t)len);
-    if (::write(i2c_fd_, pBuffer, write_size) != write_size) {
+    if ((size_t)::write(i2c_fd_, pBuffer, write_size) != write_size) {
       return 0;
     }
     return write_size;
