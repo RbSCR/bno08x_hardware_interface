@@ -354,12 +354,6 @@ void BNO08XHardwareInterface::init_communication()
 
 
 // ENHANCEMENT(rbscr) other functionalities f.e. device info, status, diagnostics
-/**
- * @brief Initialize the sensor
- *
- * This function initializes the sensor and enables the required sensor reports
- *
- */
 void BNO08XHardwareInterface::init_sensor()
 {
   try {
@@ -427,13 +421,7 @@ void BNO08XHardwareInterface::init_sensor()
   watchdog_->start();
 }
 
-/**
- * @brief Callback function for sensor events
- *
- * @param cookie Pointer to the object that called the function, not used here
- * @param sensor_value The sensor value from parsing the sensor event buffer
- *
- */
+// Transfer sesnsor values to local state storage
 void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* sensor_value)
 {
   watchdog_->reset();
@@ -470,12 +458,7 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
   }
 }
 
-/**
- * @brief Poll the sensor for new events
- *
- * This function is called periodically at the rate of the fastest sensor report
- * to get the buffered sensor events. Called by the poll_timer_ timer
- */
+//  Poll the sensor for new events
 void BNO08XHardwareInterface::poll_timer_callback() {
     {
       std::lock_guard<std::mutex> lock(bno08x_mutex_);
@@ -551,12 +534,6 @@ BNO08XHardwareInterface::export_state_interfaces()
 hardware_interface::return_type BNO08XHardwareInterface::read(
     const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  // Kind of "dummy" method, needed for ROS2 control hardware-interface.
-  // In the Control hardware_interface framework read() is used to 'tranfer' the sensorvalues
-  // to the state_interface.
-  // In this hardware_interface the sensor_callback() 'transfers' the sensorvalues
-  // to the state_interface.
-
   return hardware_interface::return_type::OK;
 }
 
