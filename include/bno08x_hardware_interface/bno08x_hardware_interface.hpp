@@ -36,6 +36,19 @@
 namespace bno08x_hardware_interface
 {
 
+/**
+ * @class BNO08XHardwareInterface
+ * @brief ROS2 Control hardware interface for a BNO08X IMU sensor
+ *
+ *
+ * ROS2 Control references
+ * - API hardware_interface:
+ *   <a href="linkURL">https://docs.ros.org/en/rolling/p/hardware_interface/</a>
+ * - Lifecycle:
+ *   <a href="linkURL">https://control.ros.org/rolling/doc/ros2_control/hardware_interface/doc/lifecycle_of_a_hardware_component.html</a>
+ *
+ *
+ */
 class BNO08XHardwareInterface : public hardware_interface::SensorInterface
 {
 public:
@@ -44,62 +57,204 @@ public:
   BNO08XHardwareInterface()
   : logger_(rclcpp::get_logger("BNO08XHardwareInterface")) {}
 
+
+  /**
+   * @brief Parse and check the hardware interface parameters.
+   *
+   * @param hardware_info
+   * @return * hardware_interface::CallbackReturn
+   *           SUCCES on succesfull init, ERROR otherwise
+   */
   hardware_interface::CallbackReturn on_init(
     const hardware_interface::HardwareInfo & hardware_info) override;
 
+
+  /**
+    * @brief Configure the hardware interface and the driver.
+    *
+    * - Open communication
+    * - Init and configure the driver
+    *
+    * @param previous_state
+    * @return * hardware_interface::CallbackReturn
+    *           SUCCES on succesfull configure, ERROR otherwise
+    */
   hardware_interface::CallbackReturn on_configure(
     const rclcpp_lifecycle::State & previous_state) override;
 
+
+  /**
+    * @brief Activate the hardware interface.
+    *
+    * Logs state change, otherwise standard lifecycle action.
+    *
+    * @param previous_state
+    * @return hardware_interface::CallbackReturn
+    */
   hardware_interface::CallbackReturn on_activate(
     const rclcpp_lifecycle::State & previous_state) override;
 
+
+  /**
+   * @brief Deactivate the hardware interface.
+   *
+   * Logs state change, otherwise standard lifecycle action.
+   *
+   * @param previous_state
+   * @return hardware_interface::CallbackReturn
+   */
   hardware_interface::CallbackReturn on_deactivate(
     const rclcpp_lifecycle::State & previous_state) override;
 
+
+  /**
+   * @brief Cleanup resource related to the hardware interface.
+   *
+   * Closes the hardware.
+   *
+   * @param previous_state
+   * @return hardware_interface::CallbackReturn
+   *         SUCCES
+   */
   hardware_interface::CallbackReturn on_cleanup(
     const rclcpp_lifecycle::State & previous_state) override;
 
+
+  /**
+   * @brief Shutdown of the hardware interface.
+   *
+   * Closes the hardware.
+   *
+   * @param previous_state
+   * @return hardware_interface::CallbackReturn
+   *         SUCCES
+   */
   hardware_interface::CallbackReturn on_shutdown(
     const rclcpp_lifecycle::State & previous_state) override;
 
-  // Called by ros2_control when read() returns ERROR.
-  // The base-class default returns ERROR → FINALIZED, bypassing on_cleanup and leaking
-  // the I2C comm. Override to close hardware and return SUCCESS → UNCONFIGURED so the
-  // controller manager can attempt reconfiguration without a process restart.
+
+  /**
+   * @brief Handle error situation
+   *
+   * Called by ros2_control when read() returns ERROR.
+   *
+   * Closes the hardware.
+   *
+   * @param previous_state
+   * @return hardware_interface::CallbackReturn
+   *         SUCCESS (to allow the controller manager a reconfiguration attempt)
+   */
   hardware_interface::CallbackReturn on_error(
     const rclcpp_lifecycle::State & previous_state) override;
 
+
+  /**
+   * @brief Exports the sensor values to the controller
+   *
+   * Exports the sensor values from the local state storage to the state_interface.
+   *
+   * Called by the controller.
+   *
+   * @return std::vector<hardware_interface::StateInterface>
+   */
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
 
-  // read() needed for compliance with hardware_component_interface
+
+  /**
+   * @brief Initiates reading the sensor values
+   *
+   * Called by the controller.
+   *
+   * In this hardware interface a kind of "dummy" function, needed for compatability
+   * with the ROS2 Control hardware_interface.
+   *
+   * In the Control hardware_interface framework read() is used to 'tranfer' the sensorvalues
+   * to the state_interface.
+   * In this hardware_interface the BNO08XHardwareInterface"::"sensor_callback"()""
+   * 'transfers' the sensorvalues to a local state storage.
+   *
+   * @param time
+   * @param period
+   * @return hardware_interface::return_type
+   */
   hardware_interface::return_type read(
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
-  // Initialize communication with the sensor.
-  // Currently only I2C is implemented; possible extensions are SPI and UART.
-  // Called by on_configure()
-  // Throws std::runtime_error when communication can not be established.
+  /**
+   * @brief Initialize communication.
+   *
+   * Currently only I2C is implemented; possible extensions are SPI and UART.
+   * Called by BNO08XHardwareInterface"::"on_configure"()"
+   *
+   * Throws std::runtime_error when communication can not be established.
+   *
+   */
   void init_communication();
 
-  // Initialize the sensor
-  // Called by on_configure()
+  /**
+   * @brief Initialize the sensor.
+   *
+   * Initializes the sensor and enables the required sensor reports.
+   *
+   * Called by BNO08XHardwareInterface"::"on_configure"()"
+   *
+   */
   void init_sensor();
 
-  // Callback function for sensor events
+  /**
+   * @brief Callback function for sensor events.
+   *
+   * Transfers the appropriate -depending on the actual sensor event- sensor values
+   * to a local state storage.
+   *
+   * @param cookie Pointer to the object that called the function
+   * @param sensor_value The sensor value from parsing the sensor event buffer
+   */
   void sensor_callback(void* cookie, sh2_SensorValue_t* sensor_value);
 
-  // Poll the sensor for new events
+  /**
+   * @brief Poll the sensor for new events.
+   *
+   * Called periodically at the rate of the fastest sensor report
+   * to get the buffered sensor events.
+   *
+   * Called by the poll_timer_ timer
+   */
   void poll_timer_callback();
 
+  /**
+   * @brief Resets the sensor.
+   *
+   * - deletes the sensor object
+   * - and initializes the sensor (again).
+   *
+   */
   void reset();
 
   // Suspend the sensor and close the I2C file descriptor.
   // Called by both on_cleanup and on_shutdown.
+  /**
+   * @brief Closes the hardware.
+   *
+   * - deletes objects -when mock not enabled- : watchdog, sensoors and communication.
+   * - reset local state storage
+   *
+   * Called by BNO08XHardwareInterface"::"on_cleanup"()"
+   * and BNO08XHardwareInterface"::"on_shutdown"()"
+   *
+   */
   void close_hardware();
 
-  // Parse a boolean hardware parameter; returns default_value if the key is absent.
-  // Accepts only "true" — mirrors the xacro $(arg ...) string convention.
+  /**
+   * @brief Helper funtion to parse a boolean hardware parameter
+   *
+   * Mirrors the xacro $(arg ...) string convention.
+   *
+   * @param key
+   * @param default_value
+   * @return value related to 'key' if key is present, default_value if key is absent
+   */
   bool parse_bool_param(const std::string & key, bool default_value) const;
 
   //
