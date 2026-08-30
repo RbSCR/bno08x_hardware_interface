@@ -432,9 +432,10 @@ void BNO08XHardwareInterface::sensor_callback(void* cookie, sh2_SensorValue_t* s
       if (enable_magnetometer_) {
         // sensor will still return infrequent magnetic field reports even if the report
         // was not enabled, so check it was enabled before publishing.
-        hw_magnetic_field_x_ = sensor_value->un.magneticField.x;
-        hw_magnetic_field_y_ = sensor_value->un.magneticField.y;
-        hw_magnetic_field_z_ = sensor_value->un.magneticField.z;
+        // sensor value is in microTesla
+        hw_magnetic_field_x_ = sensor_value->un.magneticField.x * microtesla_to_tesla_;
+        hw_magnetic_field_y_ = sensor_value->un.magneticField.y * microtesla_to_tesla_;
+        hw_magnetic_field_z_ = sensor_value->un.magneticField.z * microtesla_to_tesla_;
       }
       break;
     case SH2_ROTATION_VECTOR:

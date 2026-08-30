@@ -24,7 +24,7 @@ The BNO08x family (BNO085/BNO086) is a compact System in Package (SiP) with inte
 
 Optional:
 
-- **3 Magnetometer State Interfaces**: Magnetic field (µTesla) — fully compatible with `magnetometer_broadcaster`
+- **3 Magnetometer State Interfaces**: Magnetic field (Tesla) — fully compatible with `magnetometer_broadcaster`
 - **Magnetometer Broadcasting**: `ros2 control` `magnetometer_broadcaster`
 - **TF Broadcasting**: `imu_tf_broadcaster` relay node republishes the orientation quaternion as a dynamic `world → base_link` TF transform
 
@@ -56,9 +56,9 @@ Optional:
 | `linear_acceleration.x` | m/s² | Accelerometer X |
 | `linear_acceleration.y` | m/s² | Accelerometer Y |
 | `linear_acceleration.z` | m/s² | Accelerometer Z |
-| `magnetic_field.x` | µTesla | Magnetometer X - when magnetometer enabled |
-| `magnetic_field.y` | µTesla | Magnetometer Y - when magnetometer enabled |
-| `magnetic_field.z` | µTesla | Magnetometer Z - when magnetometer enabled |
+| `magnetic_field.x` | Tesla | Magnetometer X - when magnetometer enabled |
+| `magnetic_field.y` | Tesla | Magnetometer Y - when magnetometer enabled |
+| `magnetic_field.z` | Tesla | Magnetometer Z - when magnetometer enabled |
 
 ## Launch parameters
 
