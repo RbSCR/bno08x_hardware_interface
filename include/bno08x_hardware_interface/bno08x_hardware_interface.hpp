@@ -187,7 +187,7 @@ private:
    * Currently only I2C is implemented; possible extensions are SPI and UART.
    * Called by BNO08XHardwareInterface"::"on_configure"()"
    *
-   * Throws std::runtime_error when communication can not be established.
+   * @throws std::runtime_error when communication can not be established.
    *
    */
   void init_communication();
@@ -195,10 +195,14 @@ private:
   /**
    * @brief Initialize the sensor.
    *
-   * Initializes the sensor and enables the required sensor reports.
+   * Initializes the sensor and releated timers, enables the required sensor reports.
    *
    * Called by BNO08XHardwareInterface"::"on_configure"()"
    *
+   * @throws std::runtime_error when
+   * - the BNO08X object can't be allocated
+   * - the BNO08X sensor can't be initiated
+   * - the IMU sensor reports can't be enabled
    */
   void init_sensor();
 
@@ -297,6 +301,8 @@ private:
   double hw_magnetic_field_x_{0.0};
   double hw_magnetic_field_y_{0.0};
   double hw_magnetic_field_z_{0.0};
+
+  const double microtesla_to_tesla_{1e-6};
 };
 
 }  // namespace bno08x_hardware_interface
