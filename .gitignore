@@ -27,3 +27,4 @@ ament_index/
 *~
 *.egg-info/
 *.pyo
+*.pyd
