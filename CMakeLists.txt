@@ -182,6 +182,9 @@ if(BUILD_TESTING)
   # Tests with IMU broadcaster and magnetometer broadcaster
   add_launch_test(test/bno08x_hardware_interface/test_bno08x_magnetometer.launch.py)
 
+  # Tests with 'fixed' hardware parameters and without magnetometer broadcaster; IMU broadcaster is always spawned
+  add_launch_test(test/bno08x_hardware_interface/test_bno08x_fixedhwparams.launch.py)
+
 endif()
 
 ament_package()

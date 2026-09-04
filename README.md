@@ -28,7 +28,7 @@ Optional:
 - **Magnetometer Broadcasting**: `ros2 control` `magnetometer_broadcaster`
 - **TF Broadcasting**: `imu_tf_broadcaster` relay node republishes the orientation quaternion as a dynamic `world → base_link` TF transform
 
-## Parameters and state interfaces
+## Hardware parameters and state interfaces
 
 ### Hardware parameters
 
@@ -40,9 +40,9 @@ Optional:
 | `imu_rate` | `int` | `100` | Rate at which to measure IMU data (Hz). |
 | `enable_magnetometer` | `bool` | `false` | Enable measuring of magnetic field data. |
 | `magnetometer_rate` | `int` | `100` | Rate at which to measure magnetic field data (Hz). |
-| `enable_mock_mode` | `bool` | `false` | Skip I2C initialisation; publishes identity quaternion and zero velocity/acceleration |
+| `enable_mock_mode` | `bool` | `false` | Skip I2C initialisation; publishes identity quaternion and zero velocity/acceleration/magnetic_field |
 
-## State interfaces
+### State interfaces
 
 | Interface | Unit | Notes |
 | --------- | ---- | ----- |
@@ -60,16 +60,65 @@ Optional:
 | `magnetic_field.y` | Tesla | Magnetometer Y - when magnetometer enabled |
 | `magnetic_field.z` | Tesla | Magnetometer Z - when magnetometer enabled |
 
-## Launch parameters
+## Launch files and parameters
+
+### Launch files
+
+This package has 3 (example) launch-files:
+
+- `bno08x.launch.py`
+- `bno08x_magnetometer.launch.py`
+- `bno08x_fixedhwparams.launch.py`
+
+#### bno08x
+
+This file default launches the BNO08x with only the IMU enabled.
+The related urdf-file is `bno08x.urdf.xacro` and the related controller-config-file
+is `imu_broadcaster.yaml`.
+
+The urdf- and config-file are not configured for the magnetometer.
+The urdf-file contains defaults for the hardware parameters, which can be overruled by the
+parameters in the launch-file.
+
+#### bno08x_magnetometer
+
+This file default launches the BNO08x with the IMU and the magnetometer enabled.
+The related urdf-file is `bno08x_magnetometer.urdf.xacro` and the related controller-config-file
+is `imu_magnetometer_broadcaster.yaml`.
+
+The urdf- and config-file are configured for the magnetometer.
+The urdf-file contains defaults for the hardware parameters, which can be overruled by the
+parameters in the launch-file.
+
+#### bno08x_fixedhwparams
+
+This file default launches the BNO08x with only the IMU enabled.
+The related urdf-file is `bno08x_fixedhwparams.urdf.xacro` and the related controller-config-file
+is `imu_broadcaster.yaml`.
+
+The urdf- and config-file are not configured for the magnetometer.
+The urdf-file contains the values of the hardware parameters, the related "launch-parameters" have
+been removed from the launch-file.
+
+This launch-file, urdf-file and controller-config-file can be used as a starting point for an
+actual robot.
+
+Note: because this launch-file and urdf-file are also used in a test, the hardware
+parameter `enable_moch_mode` does not have a 'fixed' value in the urdf-file, but is still used as
+a parameter from the launch-file.
+
+### Launch parameters
+
+The launch parameters enable additional publishers/broadcasters.
+
+The IMU measurements (orientation, angular velocity and linear acceleration) are always broadcasted using the imu_sensor_broadcaster.
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
 | `publish_tf` | `bool` | `"true"` | Publish a dynamic world→base_link TF from IMU orientation for RViz visualization |
 | `broadcast_magnetometer` | `bool` | `"true"` | Broadcast magnetometer measurements using the magnetometer_broadcaster. To be usefull also set enable_magnetometer to true |
 
-The hardware parameters -mentioned above- can also be used/set in the launch file.
-
-The IMU measurements (orientation, angular velocity and linear acceleration) are always broadcasted using the imu_sensor_broadcaster.
+The hardware parameters -[see the hardware parameter table](#hardware-parameters)- can also be used/set in the launch files `bno08x.launch.py` and `bno08x_magnetometer.launch.py` to overrule the defaults set in the related `urdf.xacro`-file.
 
 ## Installation
 
@@ -95,20 +144,24 @@ colcon build --packages-select bno08x_hardware_interface
 
 ## Acknowledgements
 
-This `ros2_control` `SensorInterface` plugin uses the SH-2 protocol library provided by Hillcrest Labs.
+This plugin uses the SH-2 protocol library provided by Hillcrest Labs.
 It can be found in the `include/sh2` directory.
 Visit the official repository here: [SH-2 Protocol Library](https://github.com/ceva-dsp/sh2.git)
 
-This `ros2_control` `SensorInterface` plugin also uses the code from the "BNO08X ROS Driver" package (see link below).
-The code has been updated with new functionality that is used in thia plugin.
+This plugin also uses the code from the "BNO08X ROS Driver" package (see link below).
+The code has been updated with new functionality that is used in this plugin.
 It can be found in the `include/bno08x_driver` and `src/bno08x_driver` directories.
+
+This plugin also uses parts of the code from the "BNO055 Hardware Interface" package
+(see link below).
 
 ### Inspiration
 
 Inspiration for this package came from:
 
 - the "BNO08X ROS Driver" package by bnbhat (<https://github.com/bnbhat/bno08x_ros2_driver>)
-- the "BNO055 Hardware Interface" package by Aditya Kamath (<https://github.com/adityakamath/bno055_hardware_interface>)
+- the "BNO055 Hardware Interface" package by Aditya Kamath
+  (<https://github.com/adityakamath/bno055_hardware_interface>)
 
 ## License
 
