@@ -18,10 +18,10 @@
 #include <string>
 #include <vector>
 
-#include "hardware_interface/sensor_interface.hpp"  // link: https://github.com/ros-controls/ros2_control/blob/kilted/hardware_interface/include/hardware_interface/sensor_interface.hpp
-#include "hardware_interface/handle.hpp"  // link: https://github.com/ros-controls/ros2_control/blob/kilted/hardware_interface/include/hardware_interface/handle.hpp
-#include "hardware_interface/hardware_info.hpp"  // link: https://github.com/ros-controls/ros2_control/blob/kilted/hardware_interface/include/hardware_interface/hardware_info.hpp
-#include "hardware_interface/types/hardware_interface_return_values.hpp"  // link: https://github.com/ros-controls/ros2_control/blob/kilted/hardware_interface/include/hardware_interface/types/hardware_interface_return_values.hpp
+#include "hardware_interface/handle.hpp"
+#include "hardware_interface/hardware_info.hpp"
+#include "hardware_interface/sensor_interface.hpp"
+#include "hardware_interface/types/hardware_interface_return_values.hpp"
 
 #include "rclcpp/macros.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -29,8 +29,8 @@
 
 #include "bno08x_driver/bno08x.hpp"
 #include "bno08x_driver/i2c_interface.hpp"
-#include "bno08x_driver/uart_interface.hpp"
 #include "bno08x_driver/spi_interface.hpp"
+#include "bno08x_driver/uart_interface.hpp"
 #include "bno08x_driver/watchdog.hpp"
 
 namespace bno08x_hardware_interface
@@ -47,27 +47,23 @@ namespace bno08x_hardware_interface
  * - Lifecycle:
  *   <a href="linkURL">https://control.ros.org/rolling/doc/ros2_control/hardware_interface/doc/lifecycle_of_a_hardware_component.html</a>
  *
- *
  */
 class BNO08XHardwareInterface : public hardware_interface::SensorInterface
 {
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(BNO08XHardwareInterface)
 
-  BNO08XHardwareInterface()
-  : logger_(rclcpp::get_logger("BNO08XHardwareInterface")) {}
-
+  BNO08XHardwareInterface() : logger_(rclcpp::get_logger("BNO08XHardwareInterface")) {}
 
   /**
    * @brief Parse and check the hardware interface parameters.
    *
    * @param hardware_info
-   * @return * hardware_interface::CallbackReturn
-   *           SUCCES on succesfull init, ERROR otherwise
+   * @return hardware_interface::CallbackReturn
+   *         SUCCES on succesfull init, ERROR otherwise
    */
   hardware_interface::CallbackReturn on_init(
     const hardware_interface::HardwareInfo & hardware_info) override;
-
 
   /**
     * @brief Configure the hardware interface and the driver.
@@ -76,12 +72,11 @@ public:
     * - Init and configure the driver
     *
     * @param previous_state
-    * @return * hardware_interface::CallbackReturn
-    *           SUCCES on succesfull configure, ERROR otherwise
+    * @return hardware_interface::CallbackReturn
+    *         SUCCES on succesfull configure, ERROR otherwise
     */
   hardware_interface::CallbackReturn on_configure(
     const rclcpp_lifecycle::State & previous_state) override;
-
 
   /**
     * @brief Activate the hardware interface.
@@ -94,7 +89,6 @@ public:
   hardware_interface::CallbackReturn on_activate(
     const rclcpp_lifecycle::State & previous_state) override;
 
-
   /**
    * @brief Deactivate the hardware interface.
    *
@@ -105,7 +99,6 @@ public:
    */
   hardware_interface::CallbackReturn on_deactivate(
     const rclcpp_lifecycle::State & previous_state) override;
-
 
   /**
    * @brief Cleanup resource related to the hardware interface.
@@ -119,7 +112,6 @@ public:
   hardware_interface::CallbackReturn on_cleanup(
     const rclcpp_lifecycle::State & previous_state) override;
 
-
   /**
    * @brief Shutdown of the hardware interface.
    *
@@ -131,7 +123,6 @@ public:
    */
   hardware_interface::CallbackReturn on_shutdown(
     const rclcpp_lifecycle::State & previous_state) override;
-
 
   /**
    * @brief Handle error situation
@@ -147,7 +138,6 @@ public:
   hardware_interface::CallbackReturn on_error(
     const rclcpp_lifecycle::State & previous_state) override;
 
-
   /**
    * @brief Exports the sensor values to the controller
    *
@@ -158,7 +148,6 @@ public:
    * @return std::vector<hardware_interface::StateInterface>
    */
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
-
 
   /**
    * @brief Initiates reading the sensor values
@@ -200,9 +189,9 @@ private:
    * Called by BNO08XHardwareInterface"::"on_configure"()"
    *
    * @throws std::runtime_error when
-   * - the BNO08X object can't be allocated
-   * - the BNO08X sensor can't be initiated
-   * - the IMU sensor reports can't be enabled
+   *         - the BNO08X object can't be allocated
+   *         - the BNO08X sensor can't be initiated
+   *         - the IMU sensor reports can't be enabled
    */
   void init_sensor();
 
@@ -215,7 +204,7 @@ private:
    * @param cookie Pointer to the object that called the function
    * @param sensor_value The sensor value from parsing the sensor event buffer
    */
-  void sensor_callback(void* cookie, sh2_SensorValue_t* sensor_value);
+  void sensor_callback(void * cookie, sh2_SensorValue_t * sensor_value);
 
   /**
    * @brief Poll the sensor for new events.
@@ -228,21 +217,18 @@ private:
   void poll_timer_callback();
 
   /**
-   * @brief Resets the sensor.
+   * @brief Reset the sensor.
    *
-   * - deletes the sensor object
-   * - and initializes the sensor (again).
+   * Deletes the sensor object and then (again) initializes the sensor.
    *
    */
   void reset();
 
-  // Suspend the sensor and close the I2C file descriptor.
-  // Called by both on_cleanup and on_shutdown.
   /**
    * @brief Closes the hardware.
    *
-   * - deletes objects -when mock not enabled- : watchdog, sensoors and communication.
-   * - reset local state storage
+   * Deletes -when mock not enabled- the objects: watchdog, sensoors and communication.
+   * Resets the local state storage to zero's.
    *
    * Called by BNO08XHardwareInterface"::"on_cleanup"()"
    * and BNO08XHardwareInterface"::"on_shutdown"()"
@@ -265,26 +251,24 @@ private:
   rclcpp::Logger logger_;
 
   // Parameters
-  int         i2c_bus_{1};
-  uint8_t     i2c_addr_{0x4A};  // Default 0x4A, alternative 0x4B  Par 1.2.2.1 Datasheet BNO08X
+  int i2c_bus_{1};
+  uint8_t i2c_addr_{0x4A};  // Default: 0x4A, alternative: 0x4B  Par 1.2.2.1 Datasheet BNO08X
   std::string axis_remap_{"East-North-Up"};
-
   bool enable_magnetometer_{false};
   int magnetometer_rate_{100};  // report frequency in Hz.
   int imu_rate_{100};           // report frequency in Hz.
-
   bool enable_mock_{false};
 
   // ROS Timer
   rclcpp::TimerBase::SharedPtr poll_timer_;
 
   // BNO08X Sensor Interface
-  BNO08x* bno08x_;
+  BNO08x * bno08x_;
   std::mutex bno08x_mutex_;
-  CommInterface* comm_interface_;
+  CommInterface * comm_interface_;
 
   // Watchdog
-  Watchdog* watchdog_;
+  Watchdog * watchdog_;
 
   // State storage for imu_sensor - always -- 10 interfaces
   double hw_orientation_x_{0.0};

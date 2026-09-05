@@ -22,8 +22,8 @@
 #include <unistd.h>
 
 #include <cstring>
-#include <string>
 #include <iostream>
+#include <string>
 
 #include "comm_interface.hpp"
 
@@ -31,22 +31,23 @@
  * @brief I2C communication interface
  * This class implements the I2C communication interface for the BNO08x sensor.
  */
-class I2CInterface : public CommInterface {
+class I2CInterface : public CommInterface
+{
 public:
-  I2CInterface(const std::string& i2c_bus_file, uint8_t i2c_addr)
-    : i2c_fd_(-1), i2c_bus_file_(i2c_bus_file), i2c_addr_(i2c_addr) {
-      std::cout<< "Bus: " << i2c_bus_file_ << std::endl;
-      std::cout<< "Address: 0x" << std::hex << static_cast<int>(i2c_addr_) << std::dec << std::endl;
-      DEBUG_LOG("BNO08x - I2C Interface Created");
+  I2CInterface(const std::string & i2c_bus_file, uint8_t i2c_addr)
+  : i2c_fd_(-1), i2c_bus_file_(i2c_bus_file), i2c_addr_(i2c_addr) {
+    std::cout << "Bus: " << i2c_bus_file_ << std::endl;
+    std::cout << "Address: 0x" << std::hex << static_cast<int>(i2c_addr_) << std::dec << std::endl;
+    DEBUG_LOG("BNO08x - I2C Interface Created");
   }
 
   int open() override {
     // Open the I2C bus
     i2c_fd_ = ::open(i2c_bus_file_.c_str(), O_RDWR);
-      if (i2c_fd_ < 0) {
-        std::cerr << "BNO08x - Failed to open the I2C bus" << std::endl;
-        return -1;
-      }
+    if (i2c_fd_ < 0) {
+      std::cerr << "BNO08x - Failed to open the I2C bus" << std::endl;
+      return -1;
+    }
 
     // Acquire bus access and set the I2C address
     if (ioctl(i2c_fd_, I2C_SLAVE, i2c_addr_) < 0) {
@@ -87,7 +88,7 @@ public:
     }
   }
 
-  int read(uint8_t *pBuffer, unsigned len, uint32_t *t_us) override {
+  int read(uint8_t * pBuffer, unsigned len, uint32_t * t_us) override {
     // DEBUG_LOG("BNO08x - I2C Comm Read");
     uint8_t header[4];
     if (::read(i2c_fd_, header, 4) != 4) {
@@ -133,7 +134,7 @@ public:
     return packet_size;
   }
 
-  int write(uint8_t *pBuffer, unsigned len) override {
+  int write(uint8_t * pBuffer, unsigned len) override {
     size_t write_size = std::min((size_t)32, (size_t)len);
     if ((size_t)::write(i2c_fd_, pBuffer, write_size) != write_size) {
       return 0;
