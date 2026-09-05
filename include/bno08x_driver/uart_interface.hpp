@@ -15,8 +15,8 @@
 #ifndef BNO08X_DRIVER__UART_INTERFACE_HPP_
 #define BNO08X_DRIVER__UART_INTERFACE_HPP_
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 #include "comm_interface.hpp"
 
@@ -26,28 +26,19 @@
 class UARTInterface : public CommInterface
 {
 public:
-  explicit UARTInterface(const std::string& uart_device) : uart_device_(uart_device)
-  {
+  explicit UARTInterface(const std::string & uart_device) : uart_device_(uart_device) {
     throw std::runtime_error("UART Interface not implemented");
   }
 
-  int open() override
-  {
+  int open() override { throw std::runtime_error("UART Interface not implemented"); }
+
+  void close() override { throw std::runtime_error("UART Interface not implemented"); }
+
+  int read(uint8_t * pBuffer, unsigned len, uint32_t * t_us) override {
     throw std::runtime_error("UART Interface not implemented");
   }
 
-  void close() override
-  {
-    throw std::runtime_error("UART Interface not implemented");
-  }
-
-  int read(uint8_t* pBuffer, unsigned len, uint32_t* t_us) override
-  {
-    throw std::runtime_error("UART Interface not implemented");
-  }
-
-  int write(uint8_t* pBuffer, unsigned len) override
-  {
+  int write(uint8_t * pBuffer, unsigned len) override {
     throw std::runtime_error("UART Interface not implemented");
   }
 

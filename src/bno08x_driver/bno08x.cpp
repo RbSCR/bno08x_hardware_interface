@@ -253,16 +253,13 @@ bool BNO08x::enable_report(sh2_SensorId_t sensorId,
 // To reset, simply send a zeroed out quaternion to the function.
 
 /**
- * @brief Re-orient the the sensor
+ * @brief Re-orient the sensor
  *
  * @param pOrientation The (quaternion) orientation
  * @return true: success false: failure
  */
 bool BNO08x::setReorientation(sh2_Quaternion_t *pOrientation)
 {
-  // TODO(rbscr) remove next line, only to be used during initial physical testing
-  std::cout << "==> activating setReorientation <== " << std::endl;
-
   int status = sh2_setReorientation(pOrientation);
 
   if (status != SH2_OK)

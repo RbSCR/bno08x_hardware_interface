@@ -15,31 +15,33 @@
 #ifndef BNO08X_DRIVER__BNO08X_HPP_
 #define BNO08X_DRIVER__BNO08X_HPP_
 
-#include <linux/i2c-dev.h>
 #include <fcntl.h>
+#include <linux/i2c-dev.h>
+#include <stdio.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <iostream>
 #include <functional>
+#include <iostream>
+#include "bno08x_driver/comm_interface.hpp"
+#include "bno08x_driver/logger.h"
 #include "sh2/sh2.h"
 #include "sh2/sh2_SensorValue.h"
 #include "sh2/sh2_err.h"
-#include "bno08x_driver/comm_interface.hpp"
-#include "bno08x_driver/logger.h"
 
 /* Additional Activities not listed in SH-2 lib */
-#define PAC_ON_STAIRS 8  ///< Activity code for being on stairs
+#define PAC_ON_STAIRS 8     ///< Activity code for being on stairs
 #define PAC_OPTION_COUNT 9  ///< The number of current options for the activity classifier
 
 /**
  * @brief  Class that stores state and functions for interacting with
  *         the BNO08x 9-DOF Orientation IMU Fusion Breakout
  */
-class BNO08x {
+class BNO08x
+{
 public:
-  BNO08x(CommInterface *comm,
-          std::function<void(void*, sh2_SensorValue_t*)> sensor_callback, void *cookie);
+  BNO08x(
+    CommInterface * comm, std::function<void(void *, sh2_SensorValue_t *)> sensor_callback,
+    void * cookie);
   ~BNO08x();
 
   bool begin(int32_t sensor_id = 0);
@@ -51,7 +53,7 @@ public:
   // Set reorientation (i.e. axis remap) of the sensor
   //   Contributed by githhub user LazaroFilm (Victor Lazaro) Nov 2023.
   //   https://github.com/sparkfun/SparkFun_BNO08x_Arduino_Library/pull/15
-  bool setReorientation(sh2_Quaternion_t *pOrientation);
+  bool setReorientation(sh2_Quaternion_t * pOrientation);
 
   sh2_ProductIds_t prodIds;  ///< The product IDs returned by the sensor
 
@@ -60,15 +62,15 @@ protected:
   sh2_Hal_t HAL_;  // The struct representing the SH2 Hardware Abstraction Layer
 
 private:
-  static inline void sensor_event_callback(void *cookie, sh2_SensorEvent_t *event);
-  static void hal_callback(void *cookie, sh2_AsyncEvent_t *pEvent);
-  static inline int open_wrapper(sh2_Hal_t* HAL);
-  static inline void close_wrapper(sh2_Hal_t* HAL);
-  static inline int read_wrapper(sh2_Hal_t* HAL, uint8_t *pBuffer, unsigned len, uint32_t *t_us);
-  static inline int write_wrapper(sh2_Hal_t* HAL, uint8_t *pBuffer, unsigned len);
-  CommInterface* comm_;
-  void* cookie_;
-  std::function<void(void*, sh2_SensorValue_t*)> host_callback_;
+  static inline void sensor_event_callback(void * cookie, sh2_SensorEvent_t * event);
+  static void hal_callback(void * cookie, sh2_AsyncEvent_t * pEvent);
+  static inline int open_wrapper(sh2_Hal_t * HAL);
+  static inline void close_wrapper(sh2_Hal_t * HAL);
+  static inline int read_wrapper(sh2_Hal_t * HAL, uint8_t * pBuffer, unsigned len, uint32_t * t_us);
+  static inline int write_wrapper(sh2_Hal_t * HAL, uint8_t * pBuffer, unsigned len);
+  CommInterface * comm_;
+  void * cookie_;
+  std::function<void(void *, sh2_SensorValue_t *)> host_callback_;
   bool reset_occurred_;
 };
 

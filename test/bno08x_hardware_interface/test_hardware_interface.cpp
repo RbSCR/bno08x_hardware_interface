@@ -23,22 +23,19 @@ using hardware_interface::return_type;
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 hardware_interface::HardwareInfo make_valid_imu_info(
-  int i2c_bus = 1,
-  const std::string & i2c_addr = "4A",
-  const std::string & axis_remap = "East-North-Up")
-{
+  int i2c_bus = 1, const std::string & i2c_addr = "4A",
+  const std::string & axis_remap = "East-North-Up") {
   hardware_interface::HardwareInfo info;
   info.hardware_parameters["i2c_bus"] = std::to_string(i2c_bus);
-  info.hardware_parameters["i2c_addr"]   = i2c_addr;
+  info.hardware_parameters["i2c_addr"] = i2c_addr;
   info.hardware_parameters["axis_remap"] = axis_remap;
 
   hardware_interface::ComponentInfo sensor;
   sensor.name = "bno08x";
-  for (const auto & name : {
-    "orientation.x", "orientation.y", "orientation.z", "orientation.w",
-    "angular_velocity.x", "angular_velocity.y", "angular_velocity.z",
-    "linear_acceleration.x", "linear_acceleration.y", "linear_acceleration.z"})
-  {
+  for (const auto & name :
+       {"orientation.x", "orientation.y", "orientation.z", "orientation.w", "angular_velocity.x",
+        "angular_velocity.y", "angular_velocity.z", "linear_acceleration.x",
+        "linear_acceleration.y", "linear_acceleration.z"}) {
     hardware_interface::InterfaceInfo iface;
     iface.name = name;
     sensor.state_interfaces.push_back(iface);
@@ -47,34 +44,30 @@ hardware_interface::HardwareInfo make_valid_imu_info(
   return info;
 }
 
-static rclcpp_lifecycle::State unconfigured_state()
-{
+static rclcpp_lifecycle::State unconfigured_state() {
   return rclcpp_lifecycle::State(
     lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED, "unconfigured");
 }
-static rclcpp_lifecycle::State inactive_state()
-{
-  return rclcpp_lifecycle::State(
-    lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE, "inactive");
+static rclcpp_lifecycle::State inactive_state() {
+  return rclcpp_lifecycle::State(lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE, "inactive");
 }
-static rclcpp_lifecycle::State active_state()
-{
-  return rclcpp_lifecycle::State(
-    lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE, "active");
+static rclcpp_lifecycle::State active_state() {
+  return rclcpp_lifecycle::State(lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE, "active");
 }
 
 // ── on_init ───────────────────────────────────────────────────────────────────
 
-TEST(InitTest, ValidParams)
-{
+TEST(InitTest, ValidParams) {
   auto init = [](hardware_interface::HardwareInfo info) {
-      bno08x_hardware_interface::BNO08XHardwareInterface hw;
-      return hw.on_init(info);
-    };
+    bno08x_hardware_interface::BNO08XHardwareInterface hw;
+    return hw.on_init(info);
+  };
 
+  // defaults: bus, address and axis_remap
   EXPECT_EQ(init(make_valid_imu_info()), CallbackReturn::SUCCESS);
+
+  // bus 0, addr 0x4B
   EXPECT_EQ(init(make_valid_imu_info(0, "4B")), CallbackReturn::SUCCESS);
-  // dbus 0, addr 0x4B
 
   auto imu_rate_standard_explicit = make_valid_imu_info();
   imu_rate_standard_explicit.hardware_parameters["imu_rate"] = "100";
@@ -111,27 +104,25 @@ TEST(InitTest, ValidParams)
   EXPECT_EQ(init(calib), CallbackReturn::SUCCESS);
 }
 
-TEST(InitTest, ValidAllAxisRemaps)
-{
-  for (const auto & remap : {
-          "East-North-Up", "North-West-Up", "West-South-Up", "South-East-Up",
-          "East-South-Down", "North-East-Down", "West-North-Down", "South-West-Down",
-          "Up-South-East", "North-Up-East", "Down-North-East", "South-Down-East",
-          "Up-North-West", "North-Down-West", "Down-South-West", "South-Up-West",
-          "Up-East-North", "West-Up-North", "Down-West-North", "East-Down-North",
-          "Up-West-South", "West-Down-South", "Down-East-South", "East-Up-South"}) {
+TEST(InitTest, ValidAllAxisRemaps) {
+  for (const auto & remap :
+       {"East-North-Up",   "North-West-Up",   "West-South-Up",   "South-East-Up",
+        "East-South-Down", "North-East-Down", "West-North-Down", "South-West-Down",
+        "Up-South-East",   "North-Up-East",   "Down-North-East", "South-Down-East",
+        "Up-North-West",   "North-Down-West", "Down-South-West", "South-Up-West",
+        "Up-East-North",   "West-Up-North",   "Down-West-North", "East-Down-North",
+        "Up-West-South",   "West-Down-South", "Down-East-South", "East-Up-South"}) {
     bno08x_hardware_interface::BNO08XHardwareInterface hw;
-    EXPECT_EQ(hw.on_init(make_valid_imu_info(1, "4A", remap)),
-          CallbackReturn::SUCCESS) << "axis_remap=" << remap;
+    EXPECT_EQ(hw.on_init(make_valid_imu_info(1, "4A", remap)), CallbackReturn::SUCCESS)
+      << "axis_remap=" << remap;
   }
 }
 
-TEST(InitTest, InvalidParamsFail)
-{
+TEST(InitTest, InvalidParamsFail) {
   auto init = [](hardware_interface::HardwareInfo info) {
-      bno08x_hardware_interface::BNO08XHardwareInterface hw;
-      return hw.on_init(info);
-    };
+    bno08x_hardware_interface::BNO08XHardwareInterface hw;
+    return hw.on_init(info);
+  };
 
   auto no_sensor = make_valid_imu_info();
   no_sensor.sensors.clear();
@@ -160,10 +151,10 @@ TEST(InitTest, InvalidParamsFail)
   // Unknown state interface name must be rejected
   auto bad_iface = make_valid_imu_info();
   bad_iface.sensors[0].state_interfaces.push_back([] {
-      hardware_interface::InterfaceInfo i;
-      i.name = "orientation.q";
-      return i;
-    }());
+    hardware_interface::InterfaceInfo i;
+    i.name = "orientation.q";
+    return i;
+  }());
   EXPECT_EQ(init(bad_iface), CallbackReturn::ERROR);
 
   auto imu_rate_tohigh = make_valid_imu_info();
@@ -176,7 +167,6 @@ TEST(InitTest, InvalidParamsFail)
 
   auto imu_rate_hexvalue = make_valid_imu_info();
   imu_rate_hexvalue.hardware_parameters["imu_rate"] = "0xF1";
-                                        // note: should be converted to value: 0
   EXPECT_EQ(init(imu_rate_hexvalue), CallbackReturn::ERROR);
 
   auto imu_rate_stringvalue = make_valid_imu_info();
@@ -196,7 +186,6 @@ TEST(InitTest, InvalidParamsFail)
   auto magnetometer_rate_hexvalue = make_valid_imu_info();
   magnetometer_rate_hexvalue.hardware_parameters["enable_magnetometer"] = "true";
   magnetometer_rate_hexvalue.hardware_parameters["magnetometer_rate"] = "0xFF";
-                                                // note: should be converted to value: 0
   EXPECT_EQ(init(magnetometer_rate_hexvalue), CallbackReturn::ERROR);
 
   auto magnetometer_rate_stringvalue = make_valid_imu_info();
@@ -207,8 +196,7 @@ TEST(InitTest, InvalidParamsFail)
 
 // ── export_state_interfaces ───────────────────────────────────────────────────
 
-TEST(ExportStateInterfacesTest, InterfacesCorrect)
-{
+TEST(ExportStateInterfacesTest, InterfacesCorrect) {
   bno08x_hardware_interface::BNO08XHardwareInterface hw;
   ASSERT_EQ(hw.on_init(make_valid_imu_info()), CallbackReturn::SUCCESS);
   auto ifaces = hw.export_state_interfaces();
@@ -220,11 +208,10 @@ TEST(ExportStateInterfacesTest, InterfacesCorrect)
     EXPECT_EQ(iface.get_prefix_name(), "bno08x");
     names.push_back(iface.get_interface_name());
   }
-  for (const auto & expected : {
-    "orientation.x", "orientation.y", "orientation.z", "orientation.w",
-    "angular_velocity.x", "angular_velocity.y", "angular_velocity.z",
-    "linear_acceleration.x", "linear_acceleration.y", "linear_acceleration.z"})
-  {
+  for (const auto & expected :
+       {"orientation.x", "orientation.y", "orientation.z", "orientation.w", "angular_velocity.x",
+        "angular_velocity.y", "angular_velocity.z", "linear_acceleration.x",
+        "linear_acceleration.y", "linear_acceleration.z"}) {
     EXPECT_NE(std::find(names.begin(), names.end(), expected), names.end())
       << "Missing: " << expected;
   }
@@ -243,16 +230,14 @@ TEST(ExportStateInterfacesTest, InterfacesCorrect)
 class MockHwTest : public ::testing::Test
 {
 protected:
-  void SetUp() override
-  {
+  void SetUp() override {
     hw_ = std::make_unique<bno08x_hardware_interface::BNO08XHardwareInterface>();
     auto info = make_valid_imu_info();
     info.hardware_parameters["enable_mock_mode"] = "true";
     ASSERT_EQ(hw_->on_init(info), CallbackReturn::SUCCESS);
   }
 
-  double get(const std::string & name)
-  {
+  double get(const std::string & name) {
     for (auto & iface : ifaces_) {
       if (iface.get_interface_name() == name) {
         double v = std::numeric_limits<double>::quiet_NaN();
@@ -265,22 +250,20 @@ protected:
 
   std::unique_ptr<bno08x_hardware_interface::BNO08XHardwareInterface> hw_;
   std::vector<hardware_interface::StateInterface> ifaces_;
-  const rclcpp::Time     kTime{0, 0, RCL_ROS_TIME};
+  const rclcpp::Time kTime{0, 0, RCL_ROS_TIME};
   const rclcpp::Duration kPeriod{0, static_cast<int32_t>(10e6)};
 };
 
-TEST_F(MockHwTest, FullLifecycle)
-{
+TEST_F(MockHwTest, FullLifecycle) {
   EXPECT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
-  EXPECT_EQ(hw_->on_activate(inactive_state()),      CallbackReturn::SUCCESS);
-  EXPECT_EQ(hw_->on_deactivate(active_state()),      CallbackReturn::SUCCESS);
-  EXPECT_EQ(hw_->on_cleanup(inactive_state()),       CallbackReturn::SUCCESS);
+  EXPECT_EQ(hw_->on_activate(inactive_state()), CallbackReturn::SUCCESS);
+  EXPECT_EQ(hw_->on_deactivate(active_state()), CallbackReturn::SUCCESS);
+  EXPECT_EQ(hw_->on_cleanup(inactive_state()), CallbackReturn::SUCCESS);
 }
 
-TEST_F(MockHwTest, ReconfigureAfterCleanup)
-{
+TEST_F(MockHwTest, ReconfigureAfterCleanup) {
   ASSERT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->on_cleanup(inactive_state()),       CallbackReturn::SUCCESS);
+  ASSERT_EQ(hw_->on_cleanup(inactive_state()), CallbackReturn::SUCCESS);
 
   hw_ = std::make_unique<bno08x_hardware_interface::BNO08XHardwareInterface>();
   auto info = make_valid_imu_info();
@@ -289,23 +272,21 @@ TEST_F(MockHwTest, ReconfigureAfterCleanup)
   EXPECT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
 }
 
-TEST_F(MockHwTest, SameObjectReconfigureCycle)
-{
+TEST_F(MockHwTest, SameObjectReconfigureCycle) {
   // ros2_control reuses the same plugin instance across lifecycle transitions.
   // Verify that the same hw_ object can be configured, cleaned up, and
   // configured again without creating a new instance.
   ASSERT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->on_activate(inactive_state()),      CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->on_deactivate(active_state()),      CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->on_cleanup(inactive_state()),       CallbackReturn::SUCCESS);
+  ASSERT_EQ(hw_->on_activate(inactive_state()), CallbackReturn::SUCCESS);
+  ASSERT_EQ(hw_->on_deactivate(active_state()), CallbackReturn::SUCCESS);
+  ASSERT_EQ(hw_->on_cleanup(inactive_state()), CallbackReturn::SUCCESS);
   EXPECT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
 }
 
-TEST_F(MockHwTest, ReadOutputsValid)
-{
+TEST_F(MockHwTest, ReadOutputsValid) {
   ifaces_ = hw_->export_state_interfaces();
   ASSERT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->on_activate(inactive_state()),      CallbackReturn::SUCCESS);
+  ASSERT_EQ(hw_->on_activate(inactive_state()), CallbackReturn::SUCCESS);
   ASSERT_EQ(hw_->read(kTime, kPeriod), return_type::OK);
 
   // Mock: identity quaternion, zeros elsewhere — all finite and non-NaN
@@ -321,27 +302,25 @@ TEST_F(MockHwTest, ReadOutputsValid)
   }
 
   // Quaternion unit norm
-  const double qw = get("orientation.w"), qx = get("orientation.x"),
-    qy = get("orientation.y"), qz = get("orientation.z");
+  const double qw = get("orientation.w"), qx = get("orientation.x"), qy = get("orientation.y"),
+               qz = get("orientation.z");
   EXPECT_NEAR(std::sqrt(qw * qw + qx * qx + qy * qy + qz * qz), 1.0, 0.05);
 }
 
-TEST_F(MockHwTest, MultipleReadsRemainStable)
-{
+TEST_F(MockHwTest, MultipleReadsRemainStable) {
   ASSERT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->on_activate(inactive_state()),      CallbackReturn::SUCCESS);
+  ASSERT_EQ(hw_->on_activate(inactive_state()), CallbackReturn::SUCCESS);
   for (int i = 0; i < 20; ++i) {
     EXPECT_EQ(hw_->read(kTime, kPeriod), return_type::OK) << "iteration " << i;
   }
 }
 
-TEST_F(MockHwTest, StateResetAfterCleanup)
-{
+TEST_F(MockHwTest, StateResetAfterCleanup) {
   // Export interfaces before configuring so they stay valid throughout.
   ifaces_ = hw_->export_state_interfaces();
   ASSERT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->on_activate(inactive_state()),      CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->read(kTime, kPeriod),               return_type::OK);
+  ASSERT_EQ(hw_->on_activate(inactive_state()), CallbackReturn::SUCCESS);
+  ASSERT_EQ(hw_->read(kTime, kPeriod), return_type::OK);
 
   // Cleanup should reset all state doubles to their initial values.
   ASSERT_EQ(hw_->on_cleanup(inactive_state()), CallbackReturn::SUCCESS);
@@ -350,42 +329,39 @@ TEST_F(MockHwTest, StateResetAfterCleanup)
   EXPECT_DOUBLE_EQ(get("orientation.x"), 0.0);
   EXPECT_DOUBLE_EQ(get("orientation.y"), 0.0);
   EXPECT_DOUBLE_EQ(get("orientation.z"), 0.0);
-  EXPECT_DOUBLE_EQ(get("angular_velocity.x"),    0.0);
-  EXPECT_DOUBLE_EQ(get("angular_velocity.y"),    0.0);
-  EXPECT_DOUBLE_EQ(get("angular_velocity.z"),    0.0);
+  EXPECT_DOUBLE_EQ(get("angular_velocity.x"), 0.0);
+  EXPECT_DOUBLE_EQ(get("angular_velocity.y"), 0.0);
+  EXPECT_DOUBLE_EQ(get("angular_velocity.z"), 0.0);
   EXPECT_DOUBLE_EQ(get("linear_acceleration.x"), 0.0);
   EXPECT_DOUBLE_EQ(get("linear_acceleration.y"), 0.0);
   EXPECT_DOUBLE_EQ(get("linear_acceleration.z"), 0.0);
 }
 
-TEST_F(MockHwTest, ShutdownFromInactive)
-{
+TEST_F(MockHwTest, ShutdownFromInactive) {
   ASSERT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
-  EXPECT_EQ(hw_->on_shutdown(inactive_state()),      CallbackReturn::SUCCESS);
+  EXPECT_EQ(hw_->on_shutdown(inactive_state()), CallbackReturn::SUCCESS);
 }
 
-TEST_F(MockHwTest, ShutdownFromActive)
-{
+TEST_F(MockHwTest, ShutdownFromActive) {
   ASSERT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->on_activate(inactive_state()),      CallbackReturn::SUCCESS);
-  EXPECT_EQ(hw_->on_shutdown(active_state()),        CallbackReturn::SUCCESS);
+  ASSERT_EQ(hw_->on_activate(inactive_state()), CallbackReturn::SUCCESS);
+  EXPECT_EQ(hw_->on_shutdown(active_state()), CallbackReturn::SUCCESS);
 }
 
-TEST_F(MockHwTest, OnErrorCleansUpAndAllowsRecovery)
-{
+TEST_F(MockHwTest, OnErrorCleansUpAndAllowsRecovery) {
   // on_error() must close hardware and return SUCCESS (→ UNCONFIGURED) so that
   // the controller manager can reconfigure without a process restart.
   // The base-class default returns ERROR (→ FINALIZED), leaking the I2C fd.
   ifaces_ = hw_->export_state_interfaces();
   ASSERT_EQ(hw_->on_configure(unconfigured_state()), CallbackReturn::SUCCESS);
-  ASSERT_EQ(hw_->on_activate(inactive_state()),      CallbackReturn::SUCCESS);
+  ASSERT_EQ(hw_->on_activate(inactive_state()), CallbackReturn::SUCCESS);
 
   EXPECT_EQ(hw_->on_error(active_state()), CallbackReturn::SUCCESS);
 
   // State must be reset to initial values (close_hardware called by on_error)
   EXPECT_DOUBLE_EQ(get("orientation.w"), 1.0);
   EXPECT_DOUBLE_EQ(get("orientation.x"), 0.0);
-  EXPECT_DOUBLE_EQ(get("angular_velocity.x"),    0.0);
+  EXPECT_DOUBLE_EQ(get("angular_velocity.x"), 0.0);
   EXPECT_DOUBLE_EQ(get("linear_acceleration.x"), 0.0);
 
   // Recovery: on_configure must succeed after on_error
@@ -394,8 +370,7 @@ TEST_F(MockHwTest, OnErrorCleansUpAndAllowsRecovery)
 
 // ── main ──────────────────────────────────────────────────────────────────────
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char ** argv) {
   rclcpp::init(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
   int result = RUN_ALL_TESTS();
