@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        linter: [xmllint]
+        linter: [xmllint, pep257, lint_cmake]
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: ros-tooling/setup-ros@0.7.19
