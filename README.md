@@ -5,6 +5,24 @@
 ![C++](https://img.shields.io/badge/C++-17-blue?style=flat&logo=cplusplus&logoColor=white)
 ![License](https://img.shields.io/github/license/adityakamath/sts_hardware_interface?label=License)
 
+- [bno08x\_hardware\_interface](#bno08x_hardware_interface)
+  - [Overview](#overview)
+  - [Features](#features)
+  - [Hardware parameters and state interfaces](#hardware-parameters-and-state-interfaces)
+    - [Hardware parameters](#hardware-parameters)
+    - [State interfaces](#state-interfaces)
+  - [Launch files and parameters](#launch-files-and-parameters)
+    - [Launch files](#launch-files)
+      - [bno08x](#bno08x)
+      - [bno08x\_magnetometer](#bno08x_magnetometer)
+      - [bno08x\_fixedhwparams](#bno08x_fixedhwparams)
+    - [Launch parameters](#launch-parameters)
+  - [Installation](#installation)
+  - [Datasheet and documents](#datasheet-and-documents)
+  - [Acknowledgements](#acknowledgements)
+    - [Inspiration](#inspiration)
+  - [License](#license)
+
 ## Overview
 
 A `ros2_control` `SensorInterface` plugin for the CEVA BNO08x 9-DOF IMU's over I2C.
@@ -14,19 +32,21 @@ The BNO08x family (BNO085/BNO086) is a compact System in Package (SiP) with inte
 >[!NOTE]
 >This plugin only supports I2C.
 
-**Status:** Tested and validated on Raspberry Pi 5 running ROS 2 Kilted (Ubuntu 24.04, aarch64) with real BNO085 hardware.
+**⚠️ Status:**
+
+- Tested and validated on Raspberry Pi 5 running ROS 2 Kilted (Ubuntu 24.04, aarch64) with real BNO085 hardware.
+- Not tested on ROS2 Jazzy
+- Work in progress
 
 ## Features
 
-- **10 Orientation State Interfaces**: Orientation quaternion (x, y, z, w), angular velocity (rad/s), and linear acceleration (m/s²) — fully compatible with `imu_sensor_broadcaster`
-- **Axis Remapping**: 24 standard mounting orientations, configurable at launch, matching BNO08X datasheet §4 Figure 4-3
+- **10 Orientation State Interfaces**: orientation quaternion {x, y, z, w}, angular velocity {x, y, z} (rad/s) and linear acceleration {x, y, z} (m/s²) — fully compatible with `imu_sensor_broadcaster`
+- **Axis Remapping**: 24 standard mounting orientations, configurable at launch, matching the datasheet Figure 4-3 page 41
 - **Mock Mode**: Run the complete `ros2_control` lifecycle and publish zero/identity values without any hardware
-
-Optional:
-
-- **3 Magnetometer State Interfaces**: Magnetic field (Tesla) — fully compatible with `magnetometer_broadcaster`
-- **Magnetometer Broadcasting**: `ros2 control` `magnetometer_broadcaster`
-- **TF Broadcasting**: `imu_tf_broadcaster` relay node republishes the orientation quaternion as a dynamic `world → base_link` TF transform
+- **IMU broadcaster**: `ros2_control` `imu_broadcaster`
+- **3 Magnetometer State Interfaces** (optional): magnetic field {x, y, z} (Tesla) — fully compatible with `magnetometer_broadcaster`. In mock mode publish zero values.
+- **Magnetometer Broadcasting** (optional): `ros2 control` `magnetometer_broadcaster`
+- **TF Broadcasting** (optional): `imu_tf_broadcaster` relay node republishes the orientation quaternion as a dynamic `world → base_link` TF transform
 
 ## Hardware parameters and state interfaces
 
@@ -36,10 +56,10 @@ Optional:
 | --------- | ---- | ------- | ----------- |
 | `i2c_bus` | `int` | `1` | I2C bus number ( plugin opens /dev/i2c-{x} ) |
 | `i2c_address` | `string` | `"4A"` | I2C address as hex without 0x prefix ( 4A = 0x4A ) |
-| `axis_remap` | `string` | `"East-North-Up"` | Sensor axis placement configuration, see datasheet Figure 4-3  page 41 |
-| `imu_rate` | `int` | `100` | Rate at which to measure IMU data (Hz). |
+| `axis_remap` | `string` | `"East-North-Up"` | Sensor axis placement configuration, see datasheet Figure 4-3 page 41 |
+| `imu_rate` | `int` | `100` | Rate at which to measure IMU data (Hz). Range: 0 - 400 Hz. see datasheet Figure 6-16 page 50 |
 | `enable_magnetometer` | `bool` | `false` | Enable measuring of magnetic field data. |
-| `magnetometer_rate` | `int` | `100` | Rate at which to measure magnetic field data (Hz). |
+| `magnetometer_rate` | `int` | `100` | Rate at which to measure magnetic field data (Hz). Range: 0 - 100 Hz. see datasheet Figure 6-16 page 50 |
 | `enable_mock_mode` | `bool` | `false` | Skip I2C initialisation; publishes identity quaternion and zero velocity/acceleration/magnetic_field |
 
 ### State interfaces
@@ -141,6 +161,16 @@ Build the package:
 ```bash
 colcon build --packages-select bno08x_hardware_interface
 ```
+
+## Datasheet and documents
+
+| Name | Document number | Document revision | Date | By |
+| ---- | --------------- | ----------------- | ---- | -- |
+| BNO080_085-Datasheet.pdf | 1000-3927 | 1.17 | July 24 2023 | CEVA hillcrestlabs |
+| SH-2-Reference-Manual.pdf | 1000-3625 | 1.9 | June 2021 | hillcrestlabs |
+| Sensor-Hub-Transport-Protocol-v1.7.pdf | 1000-3535 | 1.7 | 02/16/2017 | hillcrestlabs |
+| Sensor-Calibration-Procedure-v1.1.pdf | 1000-4044 | 1.1 | February 2017 | hillcrestlabs |
+| BNO080-BNO085-Tare-Function-Usage-Guide.pdf | 1000-4045 | 1.3 | February 2023 | CEVA hillcrestlabs |
 
 ## Acknowledgements
 
