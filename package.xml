@@ -9,6 +9,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>bno08x_sh2_driver</depend>
   <depend>geometry_msgs</depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
@@ -30,10 +31,10 @@
   <test_depend>ament_cmake_cpplint</test_depend>
   <test_depend>ament_cmake_gmock</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pep257</test_depend>
   <test_depend>ament_cmake_xmllint</test_depend>
   <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_cmake</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
 
   <export>
