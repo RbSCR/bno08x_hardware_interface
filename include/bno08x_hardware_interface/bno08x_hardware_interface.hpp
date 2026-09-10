@@ -27,11 +27,11 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
-#include "bno08x_driver/bno08x.hpp"
-#include "bno08x_driver/i2c_interface.hpp"
-#include "bno08x_driver/spi_interface.hpp"
-#include "bno08x_driver/uart_interface.hpp"
-#include "bno08x_driver/watchdog.hpp"
+#include "bno08x/bno08x.hpp"
+#include "bno08x/i2c_interface.hpp"
+#include "bno08x/spi_interface.hpp"
+#include "bno08x/uart_interface.hpp"
+#include "bno08x/watchdog.hpp"
 
 namespace bno08x_hardware_interface
 {
