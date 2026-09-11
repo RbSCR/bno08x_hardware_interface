@@ -15,7 +15,7 @@ find_package(hardware_interface REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(bno08x_sh2_driver REQUIRED)
+find_package(bno08x_sh2_libraries REQUIRED)
 
 
 # ── BNO08X Hardware Interface (ros2_control sensor plugin) ──────────────────
@@ -30,7 +30,7 @@ target_include_directories(bno08x_hardware_interface PUBLIC
 target_compile_features(bno08x_hardware_interface PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
 target_link_libraries(bno08x_hardware_interface
-  ${bno08x_sh2_driver_TARGETS}
+  ${bno08x_sh2_libraries_TARGETS}
   ${pluginlib_TARGETS}
   ${rclcpp_TARGETS}
   ${rclcpp_lifecycle_TARGETS}
