@@ -34,7 +34,7 @@ The BNO08x family (BNO085/BNO086) is a compact System in Package (SiP) with inte
 
 **⚠️ Status:**
 
-- Tested and validated on Raspberry Pi 5 running ROS 2 Kilted (Ubuntu 24.04, aarch64) with real BNO085 hardware.
+- Tested and validated on Raspberry Pi 5 running ROS 2 Kilted/2026-08-21 (Ubuntu 24.04, aarch64) with real BNO085 hardware.
 - Not tested on ROS2 Jazzy
 - Work in progress
 
@@ -142,7 +142,7 @@ The hardware parameters -[see the hardware parameter table](#hardware-parameters
 
 ## Installation
 
-This plugin uses the library package `bno08x_sh2_driver`.
+This plugin uses the library package `bno08x_sh2_libraries`.
 
 Clone both repositories:
 
@@ -167,34 +167,28 @@ colcon build --packages-select bno08x_sh2_driver bno08x_hardware_interface
 
 ## Datasheet and documents
 
-| Name | Document <br> number | Document <br> revision | Date | By | Link |
-| ---- | --------------- | ----------------- | ---- | -- | ---- |
-| BNO080_085-Datasheet.pdf | 1000-3927 | 1.17 | July 24 2023 | CEVA hillcrestlabs | <https://www.ceva-ip.com/wp-content/uploads/BNO080_085-Datasheet.pdf> |
-| SH-2-Reference-Manual.pdf | 1000-3625 | 1.9 | June 2021 | hillcrestlabs | <https://www.ceva-ip.com/wp-content/uploads/SH-2-Reference-Manual.pdf> |
-| Sensor-Hub-Transport-Protocol-v1.7.pdf | 1000-3535 | 1.7 | 02/16/2017 | hillcrestlabs | <https://cdn.sparkfun.com/assets/7/6/9/3/c/Sensor-Hub-Transport-Protocol-v1.7.pdf> |
-| Sensor-Calibration-Procedure-v1.1.pdf | 1000-4044 | 1.1 | February 2017 | hillcrestlabs | <https://cdn.sparkfun.com/assets/9/e/1/d/9/Sensor-Calibration-Procedure-v1.1.pdf> |
-| BNO080-BNO085-Tare-Function-Usage-Guide.pdf | 1000-4045 | 1.3 | February 2023 | CEVA hillcrestlabs | <https://www.ceva-ip.com/wp-content/uploads/BNO080-BNO085-Tare-Function-Usage-Guide.pdf> |
+| Name | Document number | Document revision | Date | By |
+| ---- | --------------- | ----------------- | ---- | -- |
+| [BNO080_085-Datasheet.pdf](https://www.ceva-ip.com/wp-content/uploads/BNO080_085-Datasheet.pdf) | 1000-3927 | 1.17 | July 24 2023 | CEVA hillcrestlabs |
+| [SH-2-Reference-Manual.pdf](https://www.ceva-ip.com/wp-content/uploads/SH-2-Reference-Manual.pdf) | 1000-3625 | 1.9 | June 2021 | hillcrestlabs |
+| [Sensor-Hub-Transport-Protocol-v1.7.pdf](https://cdn.sparkfun.com/assets/7/6/9/3/c/Sensor-Hub-Transport-Protocol-v1.7.pdf) | 1000-3535 | 1.7 | 02/16/2017 | hillcrestlabs |
+| [Sensor-Calibration-Procedure-v1.1.pdf](https://cdn.sparkfun.com/assets/9/e/1/d/9/Sensor-Calibration-Procedure-v1.1.pdf) | 1000-4044 | 1.1 | February 2017 | hillcrestlabs |
+| [BNO080-BNO085-Tare-Function-Usage-Guide.pdf](https://www.ceva-ip.com/wp-content/uploads/BNO080-BNO085-Tare-Function-Usage-Guide.pdf) | 1000-4045 | 1.3 | February 2023 | CEVA hillcrestlabs |
 
 ## Acknowledgements
 
-This plugin uses the SH-2 protocol library provided by Hillcrest Labs.
-It can be found in the `include/sh2` directory.
-Visit the official repository here: [SH-2 Protocol Library](https://github.com/ceva-dsp/sh2.git)
+This plugin (re)uses substantial parts of the code from the "BNO055 Hardware Interface" package by Aditya Kamath (see link below).
 
-This plugin also uses the code from the "BNO08X ROS Driver" package (see link below).
-The code has been updated with new functionality that is used in this plugin.
-It can be found in the `include/bno08x_driver` and `src/bno08x_driver` directories.
+Through the `bno08x_sh2_libraries` package, this plugin also uses:
 
-This plugin also uses parts of the code from the "BNO055 Hardware Interface" package
-(see link below).
+- the SH-2 protocol library provided by Hillcrest Labs; visit the official repository here: [SH-2 Protocol Library](https://github.com/ceva-dsp/sh2.git)
+- and parts of the code from the [BNO08X ROS Driver](https://github.com/bnbhat/bno08x_ros2_driver) package by bnbhat.
 
 ### Inspiration
 
 Inspiration for this package came from:
 
-- the "BNO08X ROS Driver" package by bnbhat (<https://github.com/bnbhat/bno08x_ros2_driver>)
-- the "BNO055 Hardware Interface" package by Aditya Kamath
-  (<https://github.com/adityakamath/bno055_hardware_interface>)
+- the [BNO055 Hardware Interface](https://github.com/adityakamath/bno055_hardware_interface) package by Aditya Kamath.
 
 ## License
 
