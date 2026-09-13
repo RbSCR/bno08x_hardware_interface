@@ -15,27 +15,57 @@ imu_sensor_broadcaster:
     frame_id: imu_frame       # TF frame for the published Imu messages
 
     # Static covariance matrices (row-major 3x3, diagonal — cross-correlations are zero).
-    # Values derived from the BNO055 datasheet and typical noise density at 100 Hz.
+    # Values derived from the BNO08x datasheet.
     #
     # For IMUPLUS mode (no magnetometer), yaw drifts. Either:
     #   a) set orientation_covariance[0] = -1.0 to mark orientation unavailable (REP-145)
     #   b) set a large yaw variance in element [8], e.g. 1000.0
     #
-    # Orientation: ±2° absolute accuracy (datasheet) → (0.035 rad)² ≈ 0.001 rad²
-    # TODO(rbscr) values for bno055, check if these match bno08x values
-    static_covariance_orientation: [0.001, 0.0,    0.0,
-                                    0.0,   0.001,  0.0,
-                                    0.0,   0.0,    0.001]
+    # Orientation (high accuracy):
+    #static_covariance_orientation: [3.0e-4, 0.0,    0.0,
+    #                                0.0,    3.0e-4, 0.0,
+    #                                0.0,    0.0,    3.0e-4]
+    #
+    # Orientation (medium accuracy):
+    static_covariance_orientation: [1.5e-3, 0.0,    0.0,
+                                    0.0,    1.5e-3, 0.0,
+                                    0.0,    0.0,    1.5e-3]
+    #
+    # Orientation (low accuracy):
+    #static_covariance_orientation: [0.0075, 0.0,    0.0,
+    #                                0.0,    0.0075, 0.0,
+    #                                0.0,    0.0,    0.0075]
 
-    # Angular velocity: ~0.014 °/s/√Hz gyro noise @ 100 Hz → (~2.4e-4 rad/s)² ≈ 1e-5 rad²/s²
-    static_covariance_angular_velocity: [1.0e-5, 0.0,    0.0,
-                                         0.0,    1.0e-5, 0.0,
-                                         0.0,    0.0,    1.0e-5]
+    # Angular velocity (high accuracy):
+    #static_covariance_angular_velocity: [5.0e-4, 0.0,    0.0,
+    #                                     0.0,    5.0e-4, 0.0,
+    #                                     0.0,    0.0,    5.0e-4]
+    #
+    # Angular velocity (medium accuracy):
+    static_covariance_angular_velocity: [2.5e-3, 0.0,    0.0,
+                                         0.0,    2.5e-3, 0.0,
+                                         0.0,    0.0,    2.5e-3]
+    #
+    # Angular velocity (low accuracy):
+    #static_covariance_angular_velocity: [1.25e-2, 0.0,     0.0,
+    #                                     0.0,     1.25e-2, 0.0,
+    #                                     0.0,     0.0,     1.25e-2]
 
-    # Linear acceleration: ~150 µg/√Hz accel noise @ 100 Hz → (~0.015 m/s²)² ≈ 2e-4 m²/s⁴
-    static_covariance_linear_acceleration: [2.0e-4, 0.0,    0.0,
-                                            0.0,    2.0e-4, 0.0,
-                                            0.0,    0.0,    2.0e-4]
+    #
+    # Linear acceleration (high accuracy):
+    #static_covariance_linear_acceleration: [0.04, 0.0,  0.0,
+    #                                        0.0,  0.04, 0.0,
+    #                                        0.0,  0.0,  0.04]
+    #
+    # Linear acceleration (medium accuracy):
+    static_covariance_linear_acceleration: [0.2, 0.0, 0.0,
+                                            0.0, 0.2, 0.0,
+                                            0.0, 0.0, 0.2]
+    #
+    # Linear acceleration (low accuracy):
+    #static_covariance_linear_acceleration: [1.0, 0.0, 0.0,
+    #                                        0.0, 1.0, 0.0,
+    #                                        0.0, 0.0, 1.0]
 
     # Software rotation applied on top of the hardware axis_remap (Z-Y'-X'' / extrinsic RPY).
     # Use only for fine angular offsets that cannot be handled by axis_remap P0-P7.
