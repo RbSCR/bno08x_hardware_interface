@@ -1,0 +1,55 @@
+name: ROS 2 Builder
+
+on:
+  pull_request:
+    branches: [ main  ]
+  push:
+    branches: [ main ]
+
+ # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distribution:
+          - jazzy
+          - kilted
+        include:
+          # Jazzy Ubuntu 24.04 (Noble)
+          #- ros_distribution: jazzy
+          #  docker_image: osrf/ros:jazzy-desktop
+          #  use_ros2_testing: false
+          # Kilted Ubuntu 24.04 (Noble)
+          - ros_distribution: kilted
+            docker_image: osrf/ros:kilted-desktop
+            use_ros2_testing: false
+
+    container:
+      image: ${{ matrix.docker_image }}
+
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v7.0.1
+        with:
+          path: main
+
+      - name: Ckeckout repository bno08x_sh_libraries
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: rbscr/bno08x_sh2_libraries
+          path: main
+
+      - name: Setup ROS environment
+        uses: ros-tooling/setup-ros@0.7.19
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+          use-ros2-testing: ${{ matrix.use_ros2_testing }}
+
+      # No actual build yet
+      - run: |
+          echo "Workspace: $GITHUB_WORKSPACE"
+          find "$GITHUB_WORKSPACE" -maxdepth 3 -type d
