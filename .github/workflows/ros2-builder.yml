@@ -34,14 +34,20 @@ jobs:
     steps:
       - name: Checkout main repository
         uses: actions/checkout@v7.0.1
-        with:
-          path: ros_ws/src
 
-      - name: Ckeckout repository bno08x_sh_libraries
+      - run: |
+          echo "Workspace check 1: $GITHUB_WORKSPACE"
+          find "$GITHUB_WORKSPACE" -maxdepth 4 -type d
+
+      - name: Checkout repository bno08x_sh2_libraries
         uses: actions/checkout@v7.0.1
         with:
           repository: rbscr/bno08x_sh2_libraries
           path: ros_ws/src
+
+      - run: |
+          echo "Workspace check 2: $GITHUB_WORKSPACE"
+          find "$GITHUB_WORKSPACE" -maxdepth 4 -type d
 
       - name: Setup ROS environment
         uses: ros-tooling/setup-ros@0.7.19
@@ -51,5 +57,5 @@ jobs:
 
       # No actual build yet
       - run: |
-          echo "Workspace: $GITHUB_WORKSPACE"
+          echo "Workspace check 3: $GITHUB_WORKSPACE"
           find "$GITHUB_WORKSPACE" -maxdepth 4 -type d
