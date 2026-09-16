@@ -32,21 +32,11 @@ jobs:
       image: ${{ matrix.docker_image }}
 
     steps:
-      - name: Checkout main repository
+      - name: Checkout repository
         uses: actions/checkout@v7.0.1
 
       - run: |
           echo "Workspace check 1: $GITHUB_WORKSPACE"
-          find "$GITHUB_WORKSPACE" -maxdepth 4 -type d
-
-      - name: Checkout repository bno08x_sh2_libraries
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: rbscr/bno08x_sh2_libraries
-          # path: ros_ws/src
-
-      - run: |
-          echo "Workspace check 2: $GITHUB_WORKSPACE"
           find "$GITHUB_WORKSPACE" -maxdepth 4 -type d
 
       - name: Setup ROS environment
@@ -56,18 +46,18 @@ jobs:
           use-ros2-testing: ${{ matrix.use_ros2_testing }}
 
       - run: |
-          echo "Workspace check 3: $GITHUB_WORKSPACE"
+          echo "Workspace check 2: $GITHUB_WORKSPACE"
           find "$GITHUB_WORKSPACE" -maxdepth 4 -type d
 
       - name: Build and Test
         uses: ros-tooling/action-ros-ci@0.4.5
         with:
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          package-name: bno08x_hardware_interface bno08x_sh2_libraries
-          vcs-repo-file-url: ""
+          package-name: bno08x_hardware_interface
+          vcs-repo-file-url: "bno08x_sh2_libraries.repos"
           colcon-defaults: ""
           # no mixin "coverage-gcc" until there are more tests
 
       - run: |
-          echo "Workspace check 4: $GITHUB_WORKSPACE"
+          echo "Workspace check 3: $GITHUB_WORKSPACE"
           find "$GITHUB_WORKSPACE" -maxdepth 4 -type d
