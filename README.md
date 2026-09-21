@@ -36,7 +36,7 @@ The BNO08x family (BNO085/BNO086) is a compact System in Package (SiP) with inte
 **⚠️ Status:**
 
 - Tested and validated on Raspberry Pi 5 running ROS 2 Kilted/2026-08-21 (Ubuntu 24.04, aarch64) with real BNO085 hardware.
-- Not tested on ROS2 Jazzy
+- Tested and validated on Raspberry Pi 5 running ROS 2 Jazzy/2026-09-11 (Ubuntu 24.04, aarch64) with real BNO085 hardware.
 - Work in progress
 
 ## Features
