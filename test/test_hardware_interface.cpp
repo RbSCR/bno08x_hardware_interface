@@ -12,7 +12,6 @@
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
-#include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
 #include "bno08x_hardware_interface/bno08x_hardware_interface.hpp"
