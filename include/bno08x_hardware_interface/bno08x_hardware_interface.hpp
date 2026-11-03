@@ -24,7 +24,6 @@
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 
 #include "rclcpp/macros.hpp"
-#include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
 #include "bno08x/bno08x.hpp"
