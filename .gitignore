@@ -17,6 +17,7 @@ log/
 # ROS2 - launch/test logs
 *.launch.pyc
 *.test.pyc
+test/__pycache__/*
 
 # ROS2 - package index
 ament_index/
