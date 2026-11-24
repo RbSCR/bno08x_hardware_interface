@@ -389,7 +389,7 @@ void BNO08XHardwareInterface::init_sensor() {
     poll_timer_rate = magnetometer_rate_;
   }
   poll_timer_ = get_node()->create_wall_timer(
-    std::chrono::milliseconds(1000000 / poll_timer_rate /* Hz to us */),
+    std::chrono::milliseconds(1000 / poll_timer_rate /* Hz to ms */),
     std::bind(&BNO08XHardwareInterface::poll_timer_callback, this));
 
   // Initialize the watchdog timer
