@@ -328,7 +328,8 @@ hardware_interface::CallbackReturn BNO08XHardwareInterface::on_error(
 void BNO08XHardwareInterface::init_communication() {
   std::string device = "/dev/i2c-" + std::to_string(i2c_bus_);
 
-  RCLCPP_INFO(logger_, "Communication Interface: I2C");
+  RCLCPP_INFO(
+    logger_, "Communication Interface: I2C device=%s address=0x%02X", device.c_str(), i2c_addr_);
   try {
     comm_interface_ = new I2CInterface(device, i2c_addr_);
   } catch (const std::exception & e) {
@@ -357,6 +358,7 @@ void BNO08XHardwareInterface::init_sensor() {
   }
 
   bool imu_report_issues{false};
+  RCLCPP_INFO(logger_, "Enabling IMU reports, rate=%d ", imu_rate_);
   if (!bno08x_->enable_report(SH2_ROTATION_VECTOR, 1000000 / imu_rate_ /* Hz to us */)) {
     RCLCPP_ERROR(logger_, "Failed to enable rotation vector sensor");
     imu_report_issues = true;
@@ -375,7 +377,7 @@ void BNO08XHardwareInterface::init_sensor() {
   }
 
   if (enable_magnetometer_) {
-    RCLCPP_INFO(logger_, "Enabling magnetometer");
+    RCLCPP_INFO(logger_, "Enabling magnetometer, rate=%d", magnetometer_rate_);
     if (!bno08x_->enable_report(
           SH2_MAGNETIC_FIELD_CALIBRATED, 1000000 / magnetometer_rate_ /* Hz to us */)) {
       RCLCPP_ERROR(logger_, "Failed to enable magnetometer. Continuing without magnetometer.");
