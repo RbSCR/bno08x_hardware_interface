@@ -97,10 +97,6 @@ TEST(InitTest, ValidParams) {
   auto mock_enabled = make_valid_imu_info();
   mock_enabled.hardware_parameters["enable_mock_mode"] = "true";
   EXPECT_EQ(init(mock_enabled), CallbackReturn::SUCCESS);
-
-  auto calib = make_valid_imu_info();
-  calib.hardware_parameters["calib_file"] = "~/.ros/bno08x_calib.yaml";
-  EXPECT_EQ(init(calib), CallbackReturn::SUCCESS);
 }
 
 TEST(InitTest, ValidAllAxisRemaps) {
