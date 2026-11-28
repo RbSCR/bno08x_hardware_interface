@@ -1,7 +1,7 @@
 # bno08x_hardware_interface
 
 ![Project Status](https://img.shields.io/badge/Status-Work%20In%20Progress-orange)
-![ROS 2](https://img.shields.io/badge/ROS%202-Jazzy%20|%20Kilted%20(Ubuntu%2024.04)-blue?style=flat&logo=ros&logoSize=auto)
+![ROS 2](https://img.shields.io/badge/ROS%202-Jazzy%20(Ubuntu%2024.04)-blue?style=flat&logo=ros&logoSize=auto)
 ![C++](https://img.shields.io/badge/C++-17-blue?style=flat&logo=cplusplus&logoColor=white)
 ![License](https://img.shields.io/github/license/RbSCR/bno08x_hardware_interface?label=License)
 [![ROS 2 Builder](https://github.com/RbSCR/bno08x_hardware_interface/actions/workflows/ros2-builder.yml/badge.svg)](https://github.com/RbSCR/bno08x_hardware_interface/actions/workflows/ros2-builder.yml)
@@ -35,9 +35,10 @@ The BNO08x family (BNO085/BNO086) is a compact System in Package (SiP) with inte
 
 **⚠️ Status:**
 
-- Tested and validated on Raspberry Pi 5 running ROS 2 Kilted/2026-08-21 (Ubuntu 24.04, aarch64) with real BNO085 hardware.
-- Tested and validated on Raspberry Pi 5 running ROS 2 Jazzy/2026-09-11 (Ubuntu 24.04, aarch64) with real BNO085 hardware.
+- Tested and validated on Raspberry Pi 5 running ROS 2 Jazzy/2026-11-16 (Ubuntu 24.04, aarch64) with real BNO085 hardware.
 - Work in progress
+
+Though Kilted is no longer supported, a previous version was tested and validated on Raspberry Pi 5 running ROS 2 Kilted/2026-08-21 (Ubuntu 24.04, aarch64) with real BNO085 hardware.
 
 ## Features
 

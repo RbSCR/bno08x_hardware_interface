@@ -17,15 +17,10 @@ jobs:
       matrix:
         ros_distribution:
           - jazzy
-          - kilted
         include:
           # Jazzy Ubuntu 24.04 (Noble)
           - ros_distribution: jazzy
             docker_image: osrf/ros:jazzy-desktop
-            use_ros2_testing: false
-          # Kilted Ubuntu 24.04 (Noble)
-          - ros_distribution: kilted
-            docker_image: osrf/ros:kilted-desktop
             use_ros2_testing: false
 
     container:
@@ -35,7 +30,7 @@ jobs:
       - name: Set timestamp
         id: timestamp
         run: echo "time=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_OUTPUT
-    
+
       - name: Checkout repository
         uses: actions/checkout@v7.0.1
 
